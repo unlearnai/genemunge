@@ -105,3 +105,4 @@ ENV/
 *.json
 *.csv
 *.h5
+*.obo
