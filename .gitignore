@@ -99,3 +99,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# data and text files
+*.txt
+*.json
+*.csv
+*.h5
