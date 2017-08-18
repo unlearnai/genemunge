@@ -18,7 +18,7 @@ def download_go(force=False):
         print("downloading {}".format(GONAME))
         urllib.request.urlretrieve(LINK_TO_GO, os.path.join(FILEPATH, GONAME),
                                reporthook=download_progress_indicator)
-        print("done")
+        print("\ndone")
 
 def download_hgnc(force=False):
     output_file = os.path.join(FILEPATH, HGNCNAME)
@@ -27,7 +27,7 @@ def download_hgnc(force=False):
         print("\ndownloading {}".format(HGNCNAME))
         urllib.request.urlretrieve(LINK_TO_HGNC, os.path.join(FILEPATH, HGNCNAME),
                                reporthook=download_progress_indicator)
-        print("done")
+        print("\ndone")
 
 if __name__ == "__main__":
     download_go()
