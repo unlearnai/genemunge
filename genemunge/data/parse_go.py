@@ -1,7 +1,8 @@
-import os, re
+import os, re, gzip
 
 filepath = os.path.dirname(os.path.abspath(__file__))
 gofile = os.path.join(filepath, "go-basic.obo")
+annotationfile = os.path.join(filepath, "goa_human.gaf.gz")
 
 id_pattern = 'GO:[0-9]{7}'
 go_id = re.compile('id: ' + id_pattern)
@@ -58,11 +59,33 @@ def parse_group(group, dictionary):
             'namespace': get_namespace(group),
             'def': get_definition(group),
             'parents': get_parents(group),
-            'genes': []
+            'genes': {
+                        'EXP': [],
+                        'IDA': [],
+                        'IPI': [],
+                        'IMP': [],
+                        'IGI': [],
+                        'IEP': [],
+                        'ISS': [],
+                        'ISO': [],
+                        'ISA': [],
+                        'ISM': [],
+                        'IGC': [],
+                        'IBA': [],
+                        'IBD': [],
+                        'IKR': [],
+                        'IRD': [],
+                        'RCA': [],
+                        'TAS': [],
+                        'NAS': [],
+                        'IC': [],
+                        'ND': [],
+                        'IEA': []
+                    }
             }
 
 def make_godict(gofile):
-    # id: name, namespace, def, parents, children, genes
+    # id: {name, namespace, def, parents, children, genes}
     # connections (parent/child): 'is_a' or 'part_of'
     # ignore if 'is_obsolete: true'
 
@@ -89,5 +112,42 @@ def make_godict(gofile):
 
     return godict
 
-godict = make_godict(gofile
-                     )
+godict = make_godict(gofile)
+
+"""
+uniprot id: column 1
+gene symbol: column 2
+GO Evidence codes: column 5
+
+Experiment:
+Inferred from Experiment (EXP)
+Inferred from Direct Assay (IDA)
+Inferred from Physical Interaction (IPI)
+Inferred from Mutant Phenotype (IMP)
+Inferred from Genetic Interaction (IGI)
+Inferred from Expression Pattern (IEP)
+
+Computational:
+Inferred from Sequence or structural Similarity (ISS)
+Inferred from Sequence Orthology (ISO)
+Inferred from Sequence Alignment (ISA)
+Inferred from Sequence Model (ISM)
+Inferred from Genomic Context (IGC)
+Inferred from Biological aspect of Ancestor (IBA)
+Inferred from Biological aspect of Descendant (IBD)
+Inferred from Key Residues (IKR)
+Inferred from Rapid Divergence(IRD)
+Inferred from Reviewed Computational Analysis (RCA)
+
+Literature:
+Traceable Author Statement (TAS)
+Non-traceable Author Statement (NAS)
+
+Other:
+Inferred by Curator (IC)
+No biological Data available (ND) evidence code
+Inferred from Electronic Annotation (IEA)
+"""
+
+with gzip.open(annotationfile) as annotfile:
+    foo = annotfile.readline().decode('utf-8')
