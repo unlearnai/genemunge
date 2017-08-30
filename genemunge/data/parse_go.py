@@ -149,5 +149,25 @@ No biological Data available (ND) evidence code
 Inferred from Electronic Annotation (IEA)
 """
 
-with gzip.open(annotationfile) as annotfile:
-    foo = annotfile.readline().decode('utf-8')
+with gzip.open(annotationfile ,'rb') as annotfile:
+    for raw_line in annotfile:
+        line = raw_line.decode('utf-8')
+        if line[0] != '!': # comments
+            parsed = line.strip().split('\t')
+
+            database = parsed[0]
+            database_id = parsed[1]
+            symbol = parsed[2] # ORF for unnamed
+            qualifier = parsed[3]
+            go_term = parsed[4]
+            database_reference = parsed[5]
+            evidence = parsed[6]
+
+            # what to do about colocalizes_with and contributes_to?
+            if 'NOT' not in qualifier:
+                try:
+                    godict[go_term]['genes'][evidence] += [database_id]
+                except KeyError:
+                    # we have filtered out obsolete go terms
+                    # therefore, we have to catch this exception
+                    pass
