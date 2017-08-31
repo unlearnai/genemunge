@@ -5,6 +5,7 @@ FILEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 FILENAME = os.path.join(FILEPATH, 'hgnc_complete_set.txt')
 
 class IDConverter(object):
+    """Convert between gene identifiers."""
 
     potential_ids = ['hgnc_id',
                      'symbol',
@@ -56,7 +57,18 @@ class IDConverter(object):
                      'intermediate_filament_db',
                      'rna_central_ids']
 
-    def __init__(self, source_id, target_id):
+    def __init__(self, source_id: str, target_id: str):
+        """
+        Create IDConverter.
+
+        Args:
+            source_id (str): the id type to convert
+            target_id (str): the desired id type
+
+        Returns:
+            IDConverter
+
+        """
         assert source_id in self.potential_ids, \
         "unknown source_id type"
         assert target_id in self.potential_ids, \
@@ -77,4 +89,13 @@ class IDConverter(object):
         self.conversion_table.set_index(self.source, inplace=True)
 
     def convert(self, ids: List) -> List:
+        """
+        Convert an list of gene identifiers.
+
+        Args:
+            ids (List[str]): list of gene identifiers to convert
+
+        Returns:
+            List[str]: list of converted gene identifiers
+        """
         return list(self.conversion_table.loc[ids][self.target])
