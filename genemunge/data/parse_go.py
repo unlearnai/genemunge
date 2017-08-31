@@ -86,7 +86,13 @@ def parse_group(group, dictionary):
                     }
             }
 
-def make_godict(gofile):
+def make_godict(gofile, force=False):
+
+    # check if the outputfile already exists
+    if not force:
+        if os.path.exists(outputfile):
+            return True
+
     # id: {name, namespace, def, parents, children, genes}
     # connections (parent/child): 'is_a' or 'part_of'
     # ignore if 'is_obsolete: true'
@@ -185,7 +191,7 @@ def make_godict(gofile):
     with open(outputfile, "w") as outfile:
         json.dump(nonempty_godict, outfile)
 
-    return nonempty_godict
+    return True
 
 if __name__ == "__main__":
-    godict = make_godict(gofile)
+    make_godict(gofile, force=False)
