@@ -70,9 +70,9 @@ class IDConverter(object):
 
         """
         assert source_id in self.potential_ids, \
-        "unknown source_id type"
+        "unknown source_id type. known types {}".format(self.potential_ids)
         assert target_id in self.potential_ids, \
-        "unknown target_id type"
+        "unknown target_id type. known types {}".format(self.potential_ids)
 
         self.source = source_id
         self.target = target_id

@@ -1,8 +1,9 @@
-import os, re, gzip
+import os, re, gzip, itertools, json
 
 filepath = os.path.dirname(os.path.abspath(__file__))
 gofile = os.path.join(filepath, "go-basic.obo")
 annotationfile = os.path.join(filepath, "goa_human.gaf.gz")
+outputfile = os.path.join(filepath, 'go.json')
 
 id_pattern = 'GO:[0-9]{7}'
 go_id = re.compile('id: ' + id_pattern)
@@ -59,6 +60,7 @@ def parse_group(group, dictionary):
             'namespace': get_namespace(group),
             'def': get_definition(group),
             'parents': get_parents(group),
+            'children': [],
             'genes': {
                         'EXP': [],
                         'IDA': [],
@@ -84,7 +86,13 @@ def parse_group(group, dictionary):
                     }
             }
 
-def make_godict(gofile):
+def make_godict(gofile, force=False):
+
+    # check if the outputfile already exists
+    if not force:
+        if os.path.exists(outputfile):
+            return True
+
     # id: {name, namespace, def, parents, children, genes}
     # connections (parent/child): 'is_a' or 'part_of'
     # ignore if 'is_obsolete: true'
@@ -110,64 +118,80 @@ def make_godict(gofile):
     for group in has_id:
         parse_group(group, godict)
 
-    return godict
+    # add the children terms
+    for term in godict:
+        parents = godict[term]['parents']
+        for p in parents:
+            if term not in godict[p]['children']:
+                godict[p]['children'] += [term]
 
-godict = make_godict(gofile)
+    # add the annotations
+    """
+    uniprot id: column 1
+    gene symbol: column 2
+    GO Evidence codes: column 5
 
-"""
-uniprot id: column 1
-gene symbol: column 2
-GO Evidence codes: column 5
+    Experiment:
+    Inferred from Experiment (EXP)
+    Inferred from Direct Assay (IDA)
+    Inferred from Physical Interaction (IPI)
+    Inferred from Mutant Phenotype (IMP)
+    Inferred from Genetic Interaction (IGI)
+    Inferred from Expression Pattern (IEP)
 
-Experiment:
-Inferred from Experiment (EXP)
-Inferred from Direct Assay (IDA)
-Inferred from Physical Interaction (IPI)
-Inferred from Mutant Phenotype (IMP)
-Inferred from Genetic Interaction (IGI)
-Inferred from Expression Pattern (IEP)
+    Computational:
+    Inferred from Sequence or structural Similarity (ISS)
+    Inferred from Sequence Orthology (ISO)
+    Inferred from Sequence Alignment (ISA)
+    Inferred from Sequence Model (ISM)
+    Inferred from Genomic Context (IGC)
+    Inferred from Biological aspect of Ancestor (IBA)
+    Inferred from Biological aspect of Descendant (IBD)
+    Inferred from Key Residues (IKR)
+    Inferred from Rapid Divergence(IRD)
+    Inferred from Reviewed Computational Analysis (RCA)
 
-Computational:
-Inferred from Sequence or structural Similarity (ISS)
-Inferred from Sequence Orthology (ISO)
-Inferred from Sequence Alignment (ISA)
-Inferred from Sequence Model (ISM)
-Inferred from Genomic Context (IGC)
-Inferred from Biological aspect of Ancestor (IBA)
-Inferred from Biological aspect of Descendant (IBD)
-Inferred from Key Residues (IKR)
-Inferred from Rapid Divergence(IRD)
-Inferred from Reviewed Computational Analysis (RCA)
+    Literature:
+    Traceable Author Statement (TAS)
+    Non-traceable Author Statement (NAS)
 
-Literature:
-Traceable Author Statement (TAS)
-Non-traceable Author Statement (NAS)
+    Other:
+    Inferred by Curator (IC)
+    No biological Data available (ND) evidence code
+    Inferred from Electronic Annotation (IEA)
+    """
+    with gzip.open(annotationfile ,'rb') as annotfile:
+        for raw_line in annotfile:
+            line = raw_line.decode('utf-8')
+            if line[0] != '!': # comments
+                parsed = line.strip().split('\t')
 
-Other:
-Inferred by Curator (IC)
-No biological Data available (ND) evidence code
-Inferred from Electronic Annotation (IEA)
-"""
+                database = parsed[0] # currently, this is always UniProtKB
+                database_id = parsed[1]
+                symbol = parsed[2] # ORF for unnamed
+                qualifier = parsed[3]
+                go_term = parsed[4]
+                database_reference = parsed[5]
+                evidence = parsed[6]
 
-with gzip.open(annotationfile ,'rb') as annotfile:
-    for raw_line in annotfile:
-        line = raw_line.decode('utf-8')
-        if line[0] != '!': # comments
-            parsed = line.strip().split('\t')
+                # what to do about colocalizes_with and contributes_to?
+                if 'NOT' not in qualifier:
+                    try:
+                        godict[go_term]['genes'][evidence] += [database_id]
+                    except KeyError:
+                        # we have filtered out obsolete go terms
+                        # therefore, we have to catch this exception
+                        pass
 
-            database = parsed[0]
-            database_id = parsed[1]
-            symbol = parsed[2] # ORF for unnamed
-            qualifier = parsed[3]
-            go_term = parsed[4]
-            database_reference = parsed[5]
-            evidence = parsed[6]
+    # remove any empty go categories
+    nonempty_godict = {term: godict[term] for term in godict
+    if len(set(itertools.chain.from_iterable(godict[term]['genes'].values()))) > 0}
 
-            # what to do about colocalizes_with and contributes_to?
-            if 'NOT' not in qualifier:
-                try:
-                    godict[go_term]['genes'][evidence] += [database_id]
-                except KeyError:
-                    # we have filtered out obsolete go terms
-                    # therefore, we have to catch this exception
-                    pass
+    # write to the file
+    with open(outputfile, "w") as outfile:
+        json.dump(nonempty_godict, outfile)
+
+    return True
+
+if __name__ == "__main__":
+    make_godict(gofile, force=False)
