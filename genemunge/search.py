@@ -16,7 +16,6 @@ class Searcher(object):
             relatives = []
 
         new_relatives = self.go[term]['children']
-        print(new_relatives)
 
         while True:
             update = list(set(relatives).union(new_relatives))
@@ -30,4 +29,15 @@ class Searcher(object):
 
     def select_namespace(self, namespace):
         return [term for term in self.go if self.go[term]['namespace'] == namespace]
+
+    def keyword_search(self, keywords, fields=['name', 'def'], exact=True):
+        assert type(keywords) == list, \
+        "keywords must be a list"
+        exact_terms = [term for term in self.go if
+         any(any(k in self.go[term][f] for f in fields) for k in keywords)]
+        if exact:
+            return exact_terms
+        else:
+            return list(set(itertools.chain.from_iterable([self.traverse(t) for t in exact_terms])))
+
 
