@@ -60,6 +60,7 @@ def parse_group(group, dictionary):
             'namespace': get_namespace(group),
             'def': get_definition(group),
             'parents': get_parents(group),
+            'children': [],
             'genes': {
                         'EXP': [],
                         'IDA': [],
@@ -110,6 +111,13 @@ def make_godict(gofile):
     godict = {}
     for group in has_id:
         parse_group(group, godict)
+
+    # add the children terms
+    for term in godict:
+        parents = godict[term]['parents']
+        for p in parents:
+            if term not in godict[p]['children']:
+                godict[p]['children'] += [term]
 
     # add the annotations
     """
