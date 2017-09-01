@@ -1,4 +1,4 @@
-import urllib, os, sys
+import urllib.request, os, sys
 
 FILEPATH = os.path.dirname(os.path.abspath(__file__))
 LINK_TO_GO = "http://purl.obolibrary.org/obo/go/go-basic.obo"
