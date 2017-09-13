@@ -15,7 +15,7 @@ associated_terms = searcher.keyword_search(["immune"], exact=False)
 
 # get the proteins associated with these terms as uniprot_ids
 # set 'evidence_codes=None' to get all of the proteins
-uniprot_ids = searcher.get_proteins(terms, evidence_codes=None)
+uniprot_ids = searcher.get_proteins(associated_terms, evidence_codes=None)
 
 # convert the uniprot_ids to gene symbols
 converter = genemunge.convert.IDConverter("uniprot_ids", "symbol")
