@@ -4,6 +4,23 @@ from typing import List
 FILEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 FILENAME = os.path.join(FILEPATH, 'hgnc_complete_set.txt')
 
+
+def clean_ensembl_id(identifier):
+    """
+    Formats ensembl gene identifiers to drop the version number.
+
+    E.g., ENSG00000002822.15 -> ENSG00000002822
+
+    Args:
+        identifier (str)
+
+    Returns:
+        identifier (str)
+
+    """
+    return identifier.split('.')[0].upper()
+
+
 class IDConverter(object):
     """Convert between gene identifiers."""
 
