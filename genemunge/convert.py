@@ -1,4 +1,4 @@
-import os, pandas
+import os, pandas, numpy
 from typing import List
 
 FILEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
@@ -105,7 +105,22 @@ class IDConverter(object):
         # set the index to the source column
         self.conversion_table.set_index(self.source, inplace=True)
 
-    def convert(self, ids: List) -> List:
+    def convert(self, identifier):
+        """
+        Convert a of gene identifier.
+
+        Args:
+            id (str): gene identifier to convert
+
+        Returns:
+            str: converted gene identifier
+        """
+        try:
+            return self.conversion_table.loc[identifier][self.target]
+        except KeyError:
+            return numpy.NaN
+
+    def convert_list(self, ids: List) -> List:
         """
         Convert an list of gene identifiers.
 
@@ -115,4 +130,5 @@ class IDConverter(object):
         Returns:
             List[str]: list of converted gene identifiers
         """
-        return list(self.conversion_table.loc[ids][self.target])
+        good_keys = self.conversion_table.index.intersection(ids)
+        return list(self.conversion_table.loc[good_keys][self.target])
