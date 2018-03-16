@@ -1,6 +1,7 @@
 import os, pandas, numpy
 from typing import List
 
+
 FILEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 FILENAME = os.path.join(FILEPATH, 'hgnc_complete_set.txt')
 
@@ -98,6 +99,19 @@ class IDConverter(object):
         self._clean_conversion_table()
 
     def _clean_conversion_table(self):
+        """
+        Perform some cleanup operations on the converstion table.
+
+        Notes:
+            Modifies the converstion_table in place!
+
+        Args:
+            None
+
+        Returns:
+            NOne
+
+        """
         # drop NaN from the source column
         self.conversion_table.dropna(subset=[self.source], inplace=True)
         # drop duplicates from the source column
