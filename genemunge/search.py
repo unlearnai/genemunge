@@ -1,4 +1,5 @@
-import os, json, itertools
+import os, json
+from itertools.chain import from_iterable
 
 
 FILEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
@@ -23,8 +24,15 @@ class Searcher(object):
 
     def traverse(self, term, inclusive=True):
         """
+        Get all of the children of a given GO category.
 
+        Args:
+            term (str): GO id
+            inclusive (optional; bool): include the given term in the final
+                list of GO ids
 
+        Returns:
+            list of GO ids (List[str])
 
         """
         if inclusive:
@@ -40,8 +48,7 @@ class Searcher(object):
                 break
             else:
                 relatives = update
-            new_relatives = itertools.chain.from_iterable(
-                    [self.go[t]['children'] for t in new_relatives])
+            new_relatives = from_iterable([self.go[t]['children'] for t in new_relatives])
 
         return relatives
 
@@ -61,7 +68,17 @@ class Searcher(object):
 
     def keyword_search(self, keywords, fields=['name', 'def'], exact=True):
         """
+        Search for GO identifiers associated with some keywords.
 
+        Args:
+            keywords (List[str]): words to look for
+            fields (List[str]): fields to look in
+            extact (optional; bool): if true, then this function only returns
+                the GO ids where there is a match. if false, then this function
+                will also select all of the child GO terms.
+
+        Returns:
+            list of GO ids (List[str])
 
         """
         assert type(keywords) == list, \
@@ -70,9 +87,7 @@ class Searcher(object):
          any(any(k in self.go[term][f] for f in fields) for k in keywords)]
         if exact:
             return exact_terms
-        else:
-            return list(set(itertools.chain.from_iterable(
-                    [self.traverse(t) for t in exact_terms])))
+        return list(set(from_iterable([self.traverse(t) for t in exact_terms])))
 
     def _get_proteins_from_term(self, term, evidence_codes):
         """
