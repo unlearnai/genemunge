@@ -1,5 +1,5 @@
 import os, json
-from itertools.chain import from_iterable
+from itertools import chain
 
 
 FILEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
@@ -48,7 +48,7 @@ class Searcher(object):
                 break
             else:
                 relatives = update
-            new_relatives = from_iterable([self.go[t]['children'] for t in new_relatives])
+            new_relatives = chain.from_iterable([self.go[t]['children'] for t in new_relatives])
 
         return relatives
 
@@ -66,7 +66,24 @@ class Searcher(object):
         """
         return [term for term in self.go if self.go[term]['namespace'] == namespace]
 
-    def keyword_search(self, keywords, fields=['name', 'def'], exact=True):
+
+    def _keyword_match(self, term, keyword, fields):
+        """
+        Check if any of the fields of a given term of the gene ontology
+        are (or are not) associatedd with a given keyword.
+
+        Args:
+            term (str): a GO id
+            keyword (str): keyword to look for
+            fields (List[str]): fields to look in
+        Returns:
+            bool
+
+        """
+        return any(keyword in self.go[term][f] for f in fields)
+
+    def keyword_search(self, keywords, fields=['name', 'def'], exact=True,
+                       exclude_keywords=None, exclude_ids=None):
         """
         Search for GO identifiers associated with some keywords.
 
@@ -76,18 +93,25 @@ class Searcher(object):
             extact (optional; bool): if true, then this function only returns
                 the GO ids where there is a match. if false, then this function
                 will also select all of the child GO terms.
+            exclude_keyworks (optional; List[str]): do NOT include GO categories
+                that contain these keywords
+            exclude_ids (optional; List[str]): do NOT include these GO categories
 
         Returns:
             list of GO ids (List[str])
 
         """
-        assert type(keywords) == list, \
-        "keywords must be a list"
-        exact_terms = [term for term in self.go if
-         any(any(k in self.go[term][f] for f in fields) for k in keywords)]
+        assert type(keywords) == list, "keywords must be a list"
+
+        matches = [term for term in self.go if
+                   any(self._keyword_match(term, k, fields) for k in keywords)]
+        anti_matches = [] if exclude_keywords is None else [term for term in self.go if
+                   any(self._keyword_match(term, k, fields) for k in exclude_keywords)]
+        anti_ids = [] if exclude_ids is None else exclude_ids
+        exact_terms = list(set(matches) - set(anti_matches) - set(anti_ids))
         if exact:
             return exact_terms
-        return list(set(from_iterable([self.traverse(t) for t in exact_terms])))
+        return list(set(chain.from_iterable([self.traverse(t) for t in exact_terms])))
 
     def _get_proteins_from_term(self, term, evidence_codes):
         """
