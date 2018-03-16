@@ -9,7 +9,9 @@ HGNCNAME = "hgnc_complete_set.txt"
 LINK_TO_ANNOTATIONS = "http://geneontology.org/gene-associations/goa_human.gaf.gz"
 ANNOTATIONSNAME = "goa_human.gaf.gz"
 LINK_TO_HOUSEKEEPING = "http://www.tau.ac.il/~elieis/HKG/HK_genes.txt"
+HOUSEKEEPINGNAME = "HK_genes.txt"
 LINK_TO_TRANSCRIPTION_FACTORS = "http://www.tfcheckpoint.org/data/TFCheckpoint_download_180515.txt"
+TFNAME = "TFCheckpoint_download_180515.txt"
 
 
 def download_progress_indicator(count, blockSize, totalSize):
@@ -90,7 +92,63 @@ def download_hgnc(force=False):
         print("\ndone")
 
 
+def download_housekeeping(force=False):
+    """
+    Fetch the list of housekeeping genes.
+
+    Args:
+        force (optional; bool): set to 'True' to overwrite existing files
+
+    Returns:
+        None
+
+    """
+    output_file = os.path.join(FILEPATH, HOUSEKEEPINGNAME)
+    output_exists = os.path.exists(output_file)
+    if not output_exists or force:
+        print("\ndownloading {}".format(HOUSEKEEPINGNAME))
+        urllib.request.urlretrieve(LINK_TO_HOUSEKEEPING, output_file,
+                               reporthook=download_progress_indicator)
+        print("\ndone")
+
+
+def download_transcription_factors(force=False):
+    """
+    Fetch the list of transcription factors.
+
+    Args:
+        force (optional; bool): set to 'True' to overwrite existing files
+
+    Returns:
+        None
+
+    """
+    output_file = os.path.join(FILEPATH, TFNAME)
+    output_exists = os.path.exists(output_file)
+    if not output_exists or force:
+        print("\ndownloading {}".format(TFNAME))
+        urllib.request.urlretrieve(LINK_TO_TRANSCRIPTION_FACTORS, output_file,
+                               reporthook=download_progress_indicator)
+        print("\ndone")
+
+
+def download_everything(force=False):
+    """
+    Download all of the files.
+
+    Args:
+        force (optional; bool): set to 'True' to overwrite existing files
+
+    Returns:
+        None
+
+    """
+    download_go(force)
+    download_annotations(force)
+    download_hgnc(force)
+    download_housekeeping(force)
+    download_transcription_factors(force)
+
+
 if __name__ == "__main__":
-    download_go(force=True)
-    download_annotations(force=True)
-    download_hgnc(force=True)
+    download_everything(force=False)
