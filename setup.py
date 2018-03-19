@@ -1,8 +1,30 @@
 from setuptools import setup
+from setuptools.command.develop import develop
+from setuptools.command.install import install
+
+
+class PostDevelopCommand(develop):
+    """Post-installation for development mode."""
+    def run(self):
+        import genemunge
+        genemunge.data.downloads.download_everything(force=True)
+        genemunge.data.parse_go.make_godict(genemunge.data.parse_go.GOFILE, force=True)
+        develop.run(self)
+
+
+class PostInstallCommand(install):
+    """Post-installation for installation mode."""
+    def run(self):
+        import genemunge
+        genemunge.data.downloads.download_everything(force=True)
+        genemunge.data.parse_go.make_godict(genemunge.data.parse_go.GOFILE, force=True)
+        install.run(self)
+
 
 def readme():
     with open('README.md') as f:
         return f.read()
+
 
 setup(name='genemunge',
       version='0.0',
@@ -21,4 +43,9 @@ setup(name='genemunge',
       tests_require=[
           'pytest'
       ],
-      zip_safe=False)
+      zip_safe=False,
+      cmdclass={
+              'develop': PostDevelopCommand,
+              'install': PostInstallCommand
+              }
+    )
