@@ -4,7 +4,7 @@ from setuptools.command.install import install
 
 
 class PostDevelopCommand(develop):
-    """Post-installation for development mode."""
+    """Post-installation data download and processing for development mode."""
     def run(self):
         import genemunge
         genemunge.data.downloads.download_everything(force=True)
@@ -13,7 +13,7 @@ class PostDevelopCommand(develop):
 
 
 class PostInstallCommand(install):
-    """Post-installation for installation mode."""
+    """Post-installation data download and processing for installation mode."""
     def run(self):
         import genemunge
         genemunge.data.downloads.download_everything(force=True)
@@ -29,6 +29,7 @@ def readme():
 setup(name='genemunge',
       version='0.0',
       description='Tools for munging genomics data',
+      long_description=readme(),
       packages=['genemunge'],
       install_requires=[
           'h5py',
