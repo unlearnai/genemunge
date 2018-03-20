@@ -107,4 +107,5 @@ ENV/
 *.h5
 *.obo
 *.gz
-*.h5
+*.tsv
+*.Rdata
