@@ -102,7 +102,6 @@ class Searcher(object):
 
         """
         assert type(keywords) == list, "keywords must be a list"
-
         matches = [term for term in self.go if
                    any(self._keyword_match(term, k, fields) for k in keywords)]
         anti_matches = [] if exclude_keywords is None else [term for term in self.go if

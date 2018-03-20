@@ -107,9 +107,8 @@ def download_housekeeping(force=False):
     output_exists = os.path.exists(output_file)
     if not output_exists or force:
         print("\ndownloading {}".format(HOUSEKEEPINGNAME))
-        urllib.request.urlretrieve(LINK_TO_HOUSEKEEPING, output_file,
-                               reporthook=download_progress_indicator)
-        print("\ndone")
+        urllib.request.urlretrieve(LINK_TO_HOUSEKEEPING, output_file)
+        print("done")
 
 
 def download_transcription_factors(force=False):
@@ -127,9 +126,8 @@ def download_transcription_factors(force=False):
     output_exists = os.path.exists(output_file)
     if not output_exists or force:
         print("\ndownloading {}".format(TFNAME))
-        urllib.request.urlretrieve(LINK_TO_TRANSCRIPTION_FACTORS, output_file,
-                               reporthook=download_progress_indicator)
-        print("\ndone")
+        urllib.request.urlretrieve(LINK_TO_TRANSCRIPTION_FACTORS, output_file)
+        print("done")
 
 
 def download_everything(force=False):
