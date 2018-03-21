@@ -23,6 +23,7 @@ def setup_data():
     subprocess.call(
             "Rscript " + os.path.join(script_path, 'recount.R') + ' ' + script_path,
             shell=True)
+    genemunge.data.gtex.process_gtex.create_tissue_stats()
 
 
 class PostDevelopCommand(develop):
