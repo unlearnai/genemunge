@@ -25,6 +25,7 @@ if (!file.exists(pheno_file)) {
 }
 
 # load the data
+print(data_file)
 load(data_file)
 
 # export the data in csv
