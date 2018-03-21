@@ -109,3 +109,4 @@ ENV/
 *.gz
 *.tsv
 *.Rdata
+*.Rhistory
