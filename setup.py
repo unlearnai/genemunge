@@ -17,6 +17,8 @@ def setup_data():
     import genemunge, subprocess, os
     genemunge.data.downloads.download_everything(force=True)
     genemunge.data.parse_go.make_godict(genemunge.data.parse_go.GOFILE, force=True)
+    # process the gene attributes
+    genemunge.data.gene_attributes.create_attributes_file()
     # download the gtex data
     package_path = os.path.dirname(os.path.abspath(genemunge.__file__))
     script_path = os.path.join(package_path, 'data', 'gtex')
