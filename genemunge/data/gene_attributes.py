@@ -2,7 +2,7 @@ import os
 import pandas
 import json
 
-#from .. import convert
+from .. import convert
 
 def create_attributes_file():
     """
