@@ -22,6 +22,8 @@ class Searcher(object):
         """
         with open(GONAME, 'r') as infile:
             self.go = json.load(infile)
+        with open(ATTRIBUTENAME, 'r') as infile:
+            self.attributes = json.load(infile)
 
     def traverse(self, term, inclusive=True):
         """
@@ -115,7 +117,7 @@ class Searcher(object):
 
     def _get_proteins_from_term(self, term, evidence_codes):
         """
-        Get all of the proteins (as UniprotKB ids) associated with a
+        Get all of the genes (as UniprotKB ids) associated with a
         given GO identifier and some evidence codes.
 
         Args:
@@ -123,7 +125,7 @@ class Searcher(object):
             evidence_codes (None or List[str]):
 
         Returns:
-            proteins (List[str])
+            genes (List[str])
 
         """
         proteins = []
@@ -142,7 +144,7 @@ class Searcher(object):
             evidence_codes (None or List[str]):
 
         Returns:
-            proteins (List[str])
+            genes (List[str])
 
         """
         if evidence_codes is not None:
@@ -153,15 +155,29 @@ class Searcher(object):
 
     def get_housekeeping_genes(self):
         """
+        Get a list of genes that are designated to be "housekeeping genes".
+
+        Args:
+            None
+
+        Returns:
+            genes (List[str])
 
         """
-        pass
-
+        return self.attributes["housekeeping_genes"]
 
     def get_transcription_factors(self):
         """
+        Get a list of genes that are designated to be transcription factors
+        in humans.
+
+        Args:
+            None
+
+        Returns:
+            genes (List[str])
 
         """
-        pass
+        return self.attributes["transcription_factors"]
 
 
