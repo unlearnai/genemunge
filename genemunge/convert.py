@@ -148,5 +148,5 @@ class IDConverter(object):
         good_keys = self.conversion_table.index.intersection(ids)
         converted = list(self.conversion_table.loc[good_keys][self.target])
         tmp = pandas.DataFrame(numpy.full(len(ids), numpy.NaN), index=ids)
-        tmp[good_keys] = converted
+        tmp.loc[good_keys] = converted
         return list(tmp[0])
