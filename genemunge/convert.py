@@ -134,6 +134,8 @@ class IDConverter(object):
         except KeyError:
             return numpy.NaN
 
+    # TODO: what is happening with NaN values here?
+    # TODO: what about ids where the mapping isn't unique?
     def convert_list(self, ids: List) -> List:
         """
         Convert an list of gene identifiers.

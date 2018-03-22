@@ -3,7 +3,8 @@ from itertools import chain
 
 
 FILEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
-FILENAME = os.path.join(FILEPATH, 'go.json')
+GONAME = os.path.join(FILEPATH, 'go.json')
+ATTRIBUTENAME = os.path.join(FILEPATH, 'gene_attributes.json')
 
 
 class Searcher(object):
@@ -19,8 +20,10 @@ class Searcher(object):
             Searcher
 
         """
-        with open(FILENAME, 'r') as infile:
+        with open(GONAME, 'r') as infile:
             self.go = json.load(infile)
+        with open(ATTRIBUTENAME, 'r') as infile:
+            self.attributes = json.load(infile)
 
     def traverse(self, term, inclusive=True):
         """
@@ -114,7 +117,7 @@ class Searcher(object):
 
     def _get_proteins_from_term(self, term, evidence_codes):
         """
-        Get all of the proteins (as UniprotKB ids) associated with a
+        Get all of the genes associated with a
         given GO identifier and some evidence codes.
 
         Args:
@@ -122,7 +125,7 @@ class Searcher(object):
             evidence_codes (None or List[str]):
 
         Returns:
-            proteins (List[str])
+            genes (List[str]): list of genes by UniprotKB id
 
         """
         proteins = []
@@ -131,9 +134,9 @@ class Searcher(object):
                 proteins += self.go[term]["genes"][code]
         return proteins
 
-    def get_proteins(self, terms, evidence_codes = None):
+    def get_genes(self, terms, evidence_codes = None):
         """
-        Get all of the proteins (as UniprotKB ids) associated with a list of
+        Get all of the genes associated with a list of
         GO idenifiers and some evidence codes.
 
         Args:
@@ -141,7 +144,7 @@ class Searcher(object):
             evidence_codes (None or List[str]):
 
         Returns:
-            proteins (List[str])
+            genes (List[str]): list of genes by UniprotKB id
 
         """
         if evidence_codes is not None:
@@ -149,5 +152,32 @@ class Searcher(object):
             "evidence_codes must be None or a list of GO evidence codes"
         all_proteins = [self._get_proteins_from_term(t, evidence_codes) for t in terms]
         return list(set().union(*all_proteins))
+
+    def get_housekeeping_genes(self):
+        """
+        Get a list of genes that are designated to be "housekeeping genes".
+
+        Args:
+            None
+
+        Returns:
+            genes (List[str]): list of genes by UniprotKB id
+
+        """
+        return self.attributes["housekeeping_genes"]
+
+    def get_transcription_factors(self):
+        """
+        Get a list of genes that are designated to be transcription factors
+        in humans.
+
+        Args:
+            None
+
+        Returns:
+            genes (List[str]): list of genes by UniprotKB id
+
+        """
+        return self.attributes["transcription_factors"]
 
 
