@@ -117,7 +117,7 @@ class Searcher(object):
 
     def _get_proteins_from_term(self, term, evidence_codes):
         """
-        Get all of the genes (as UniprotKB ids) associated with a
+        Get all of the genes associated with a
         given GO identifier and some evidence codes.
 
         Args:
@@ -125,7 +125,7 @@ class Searcher(object):
             evidence_codes (None or List[str]):
 
         Returns:
-            genes (List[str])
+            genes (List[str]): list of genes by UniprotKB id
 
         """
         proteins = []
@@ -144,7 +144,7 @@ class Searcher(object):
             evidence_codes (None or List[str]):
 
         Returns:
-            genes (List[str])
+            genes (List[str]): list of genes by UniprotKB id
 
         """
         if evidence_codes is not None:
@@ -161,7 +161,7 @@ class Searcher(object):
             None
 
         Returns:
-            genes (List[str])
+            genes (List[str]): list of genes by UniprotKB id
 
         """
         return self.attributes["housekeeping_genes"]
@@ -175,7 +175,7 @@ class Searcher(object):
             None
 
         Returns:
-            genes (List[str])
+            genes (List[str]): list of genes by UniprotKB id
 
         """
         return self.attributes["transcription_factors"]
