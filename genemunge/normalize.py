@@ -25,6 +25,9 @@ class Normalizer(object):
         # clean the ensemble gene ids
         self.gene_lengths.index = list(map(convert.clean_ensembl_id, self.gene_lengths.index))
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
+        # convert the gene ids
+        c = convert.IDConverter('ensembl_gene_id', identifier)
+        c.convert_list(list(self.gene_lengths.index))
 
     def tpm_from_rpkm(self, data, gene_list=None):
         """
