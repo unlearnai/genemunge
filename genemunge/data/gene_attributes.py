@@ -2,7 +2,7 @@ import os
 import pandas
 import json
 
-from .. import convert
+#from .. import convert
 
 def create_attributes_file():
     """
@@ -20,6 +20,7 @@ def create_attributes_file():
     # read in the list of housekeeping genes
     hk_symbols = list(pandas.read_csv(os.path.join(filedir, "HK_genes.txt"),
                                       sep="\t", header=None)[0])
+    hk_symbols = list(map(lambda x: x.strip(), hk_symbols))
     # read in the list of transcription factors
     tfs = pandas.read_csv(os.path.join(filedir, "TFCheckpoint_download_180515.txt"),
                           sep='\t')
@@ -32,3 +33,4 @@ def create_attributes_file():
     with open(os.path.join(filedir, 'gene_attributes.json'), 'w') as out:
         json.dump({'housekeeping_genes': hk_uniprot,
                    'transcription_factors': tf_uniprot}, out)
+
