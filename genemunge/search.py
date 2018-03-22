@@ -110,6 +110,8 @@ class Searcher(object):
         anti_matches = [] if exclude_keywords is None else [term for term in self.go if
                    any(self._keyword_match(term, k, fields) for k in exclude_keywords)]
         anti_ids = [] if exclude_ids is None else exclude_ids
+        # TODO: this exclusion works with 'exact' but doesn't exclude
+        # things that are picked up while traversing the graph
         exact_terms = list(set(matches) - set(anti_matches) - set(anti_ids))
         if exact:
             return exact_terms

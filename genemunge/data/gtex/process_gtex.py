@@ -17,7 +17,9 @@ def create_tissue_stats():
 
     """
     filepath = os.path.dirname(os.path.abspath(__file__))
-
+    outputdir = os.path.join(filepath, 'tissues')
+    if not os.path.exists(outputdir):
+        os.mkdir(outputdir)
     samples = pandas.read_csv(os.path.join(filepath, 'SRP012682.tsv'), sep='\t')
     expression = pandas.read_csv(os.path.join(filepath, 'expression_data.csv'), sep='\t')
     gene_info = pandas.read_csv(os.path.join(filepath, 'gene_info.csv'), sep='\t')
@@ -46,4 +48,4 @@ def create_tissue_stats():
                 tpm.quantile(q=0.75, axis=0)).rename(columns={0.75: 'upper_quartile'})
         # save the statistics to a csv file
         stats = pandas.concat([mean, median, std, lower_quantile, upper_quantile], axis=1)
-        stats.to_csv(os.path.join(filepath, t + '.csv'))
+        stats.to_csv(os.path.join(outputdir, t + '.csv'))
