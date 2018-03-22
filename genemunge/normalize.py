@@ -1,6 +1,5 @@
 import os
 import pandas
-import numpy
 
 from . import convert
 
@@ -27,7 +26,10 @@ class Normalizer(object):
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
         # convert the gene ids
         c = convert.IDConverter('ensembl_gene_id', identifier)
-        c.convert_list(list(self.gene_lengths.index))
+        self.gene_lengths.index = c.convert_list(list(self.gene_lengths.index))
+        # drop any NaN and duplicate ids
+        self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.isnull()]
+        self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
 
     def tpm_from_rpkm(self, data, gene_list=None):
         """
