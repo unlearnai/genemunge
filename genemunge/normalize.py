@@ -42,7 +42,7 @@ class Normalizer(object):
             subset = data[gene_list]
         else:
             subset = data
-        return subset.divide(subset.sum(axis=1), axis='rows')
+        return 10**6 * subset.divide(subset.sum(axis=1), axis='rows')
 
     def tpm_from_counts(self, data, gene_list=None):
         """
@@ -61,6 +61,19 @@ class Normalizer(object):
         else:
             common_genes = list(self.gene_lengths.index)
         subset = data[common_genes].divide(self.gene_lengths[common_genes], axis='columns')
-        return subset.divide(subset.sum(axis=1), axis='rows')
+        return 10**6 * subset.divide(subset.sum(axis=1), axis='rows')
 
+    def tpm_from_subset(self, data, gene_list=None):
+        """
+        Renormalize a subset of genes.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+            gene_list (optional; List[str]): a list of gene ids
+
+        Returns:
+            pandas.DataFrame
+
+        """
+        return self.tpm_from_rpkm(data, gene_list)
 
