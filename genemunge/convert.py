@@ -134,7 +134,6 @@ class IDConverter(object):
         except KeyError:
             return numpy.NaN
 
-    # TODO: what is happening with NaN values here?
     # TODO: what about ids where the mapping isn't unique?
     def convert_list(self, ids: List) -> List:
         """
@@ -147,4 +146,7 @@ class IDConverter(object):
             List[str]: list of converted gene identifiers
         """
         good_keys = self.conversion_table.index.intersection(ids)
-        return list(self.conversion_table.loc[good_keys][self.target])
+        converted = list(self.conversion_table.loc[good_keys][self.target])
+        tmp = pandas.DataFrame(numpy.full(len(ids), numpy.NaN), index=ids)
+        tmp.loc[good_keys] = converted
+        return list(tmp[0])

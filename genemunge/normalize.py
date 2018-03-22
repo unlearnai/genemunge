@@ -1,6 +1,5 @@
 import os
 import pandas
-import numpy
 
 from . import convert
 
@@ -25,6 +24,12 @@ class Normalizer(object):
         # clean the ensemble gene ids
         self.gene_lengths.index = list(map(convert.clean_ensembl_id, self.gene_lengths.index))
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
+        # convert the gene ids
+        c = convert.IDConverter('ensembl_gene_id', identifier)
+        self.gene_lengths.index = c.convert_list(list(self.gene_lengths.index))
+        # drop any NaN and duplicate ids
+        self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.isnull()]
+        self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
 
     def tpm_from_rpkm(self, data, gene_list=None):
         """
@@ -42,7 +47,7 @@ class Normalizer(object):
             subset = data[gene_list]
         else:
             subset = data
-        return subset.divide(subset.sum(axis=1), axis='rows')
+        return 10**6 * subset.divide(subset.sum(axis=1), axis='rows')
 
     def tpm_from_counts(self, data, gene_list=None):
         """
@@ -56,5 +61,24 @@ class Normalizer(object):
             pandas.DataFrame
 
         """
-        pass
+        if gene_list is not None:
+            common_genes = list(set(gene_list) & set(self.gene_lengths.index))
+        else:
+            common_genes = list(self.gene_lengths.index)
+        subset = data[common_genes].divide(self.gene_lengths[common_genes], axis='columns')
+        return 10**6 * subset.divide(subset.sum(axis=1), axis='rows')
+
+    def tpm_from_subset(self, data, gene_list=None):
+        """
+        Renormalize a subset of genes.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+            gene_list (optional; List[str]): a list of gene ids
+
+        Returns:
+            pandas.DataFrame
+
+        """
+        return self.tpm_from_rpkm(data, gene_list)
 
