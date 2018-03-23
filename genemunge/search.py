@@ -69,7 +69,6 @@ class Searcher(object):
         """
         return [term for term in self.go if self.go[term]['namespace'] == namespace]
 
-
     def _keyword_match(self, term, keyword, fields):
         """
         Check if any of the fields of a given term of the gene ontology

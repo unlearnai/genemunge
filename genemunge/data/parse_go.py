@@ -1,5 +1,8 @@
 import os, re, gzip, itertools, json
 
+from .. import convert
+converter = convert.IDConverter('uniprot_ids', 'ensembl_gene_id')
+
 
 FILEPATH = os.path.dirname(os.path.abspath(__file__))
 GOFILE = os.path.join(FILEPATH, "go-basic.obo")
@@ -298,7 +301,10 @@ def make_godict(gofile, force=False):
                 # what to do about colocalizes_with and contributes_to?
                 if 'NOT' not in qualifier:
                     try:
-                        godict[go_term]['genes'][evidence] += [database_id]
+                        ensembl = converter.convert(database_id)
+                        # add the identifier if it is not NaN
+                        if ensembl == ensembl:
+                            godict[go_term]['genes'][evidence] += [ensembl]
                     except KeyError:
                         # we have filtered out obsolete go terms
                         # therefore, we have to catch this exception
