@@ -98,6 +98,7 @@ class Describer(object):
         ax.set_ylim([min_y - 0.1 * abs(min_y), max_y + 0.1 * abs(max_y)])
         plt.xticks(numpy.arange(len(tissues)) + 1, tissues, rotation='vertical')
         ax.set_title(identifier)
+        ax.set_ylabel('TPM')
         plt.show(fig)
 
     def gene_gene_info(self, idenifier):
