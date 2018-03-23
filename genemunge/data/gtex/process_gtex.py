@@ -1,8 +1,8 @@
 import os
 import pandas
 
-#TODO: use normalize?
-#TODO: use an HDF5 store?
+from ... import normalize
+from ... import convert
 
 def create_tissue_stats():
     """
@@ -20,35 +20,47 @@ def create_tissue_stats():
 
     """
     filepath = os.path.dirname(os.path.abspath(__file__))
-    outputdir = os.path.join(filepath, 'tissues')
-    if not os.path.exists(outputdir):
-        os.mkdir(outputdir)
+
     samples = pandas.read_csv(os.path.join(filepath, 'SRP012682.tsv'), sep='\t')
     expression = pandas.read_csv(os.path.join(filepath, 'expression_data.csv'), sep='\t')
-    gene_info = pandas.read_csv(os.path.join(filepath, 'gene_info.csv'), sep='\t')
-    gene_info.set_index('gene_id', inplace=True)
-    gene_lengths = gene_info['bp_length']
+
+    mean = pandas.DataFrame()
+    median = pandas.DataFrame()
+    std = pandas.DataFrame()
+    lower_quartile = pandas.DataFrame()
+    upper_quartile = pandas.DataFrame()
 
     tissues = samples.groupby('smts').groups
-
+    norm = normalize.Normalizer('ensembl_gene_id')
     for t in tissues:
+        print(t)
         # select the sample ids corresponding to the tissue
         index = list(samples['run'].loc[tissues[t]].values)
         tissue_expression = (expression[index].T)
         # replace missing data with 0
         tissue_expression.fillna(0.0, inplace=True)
+        # clean the ensemble ids and add up the duplicates
+        tissue_expression.columns = convert.clean_ensembl_ids(tissue_expression.columns)
+        tissue_expression = normalize.deduplicate(tissue_expression)
         # convert from counts to TPM
-        tissue_expression = tissue_expression / gene_lengths
-        total = tissue_expression.sum(axis=1)
-        tpm = 10**6 * tissue_expression.divide(total, axis='rows')
+        tpm = norm.tpm_from_counts(tissue_expression)
         # compute some statistics
-        mean = pandas.DataFrame(tpm.mean(), columns=["mean"])
-        median = pandas.DataFrame(tpm.median(), columns=['median'])
-        std = pandas.DataFrame(tpm.std(), columns=['std'])
-        lower_quantile = pandas.DataFrame(
-                tpm.quantile(q=0.25, axis=0)).rename(columns={0.25: 'lower_quartile'})
-        upper_quantile = pandas.DataFrame(
-                tpm.quantile(q=0.75, axis=0)).rename(columns={0.75: 'upper_quartile'})
-        # save the statistics to a csv file
-        stats = pandas.concat([mean, median, std, lower_quantile, upper_quantile], axis=1)
-        stats.to_csv(os.path.join(outputdir, t + '.csv'))
+        mean = pandas.concat(
+                [mean, pandas.DataFrame(tpm.mean(), columns=[t])], axis=1)
+        median = pandas.concat(
+                [median, pandas.DataFrame(tpm.median(), columns=[t])], axis=1)
+        std = pandas.concat(
+                [std, pandas.DataFrame(tpm.std(), columns=[t])], axis=1)
+        lower_quartile = pandas.concat(
+                [lower_quartile, pandas.DataFrame(
+                        tpm.quantile(q=0.25, axis=0)).rename(columns={0.25: t})], axis=1)
+        upper_quartile = pandas.concat(
+                [upper_quartile, pandas.DataFrame(
+                        tpm.quantile(q=0.75, axis=0)).rename(columns={0.75: t})], axis=1)
+
+    with pandas.HDFStore(os.path.join(filepath, 'tissue_stats.h5'), 'w') as store:
+        store.put('mean', mean)
+        store.put('median', median)
+        store.put('std', std)
+        store.put('lower_quartile', lower_quartile)
+        store.put('upper_quartile', upper_quartile)

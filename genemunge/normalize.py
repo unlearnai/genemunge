@@ -4,6 +4,20 @@ import pandas
 from . import convert
 
 
+def deduplicate(data):
+    """
+    Adds the values from any duplicated genes.
+
+    Args:
+        data (pandas.DataFrame ~ (num_samples, num_genes))
+
+    Returns:
+        pandas.DataFrame
+
+    """
+    return data.groupby(data.columns, axis=1).sum()
+
+
 def impute(data, scale=0.5):
     """
     Replace any zeros in each row with a fraction of the smallest non-zero
@@ -40,11 +54,12 @@ class Normalizer(object):
         gene_info.set_index('gene_id', inplace=True)
         self.gene_lengths = gene_info['bp_length']
         # clean the ensemble gene ids
-        self.gene_lengths.index = list(map(convert.clean_ensembl_id, self.gene_lengths.index))
+        self.gene_lengths.index = convert.clean_ensembl_ids(self.gene_lengths.index)
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
         # convert the gene ids
-        c = convert.IDConverter('ensembl_gene_id', identifier)
-        self.gene_lengths.index = c.convert_list(list(self.gene_lengths.index))
+        if identifier is not 'ensembl_gene_id':
+            c = convert.IDConverter('ensembl_gene_id', identifier)
+            self.gene_lengths.index = c.convert_list(list(self.gene_lengths.index))
         # drop any NaN and duplicate ids
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.isnull()]
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
