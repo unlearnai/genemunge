@@ -3,6 +3,24 @@ import pandas
 
 from . import convert
 
+
+def impute(data, scale=0.5):
+    """
+    Replace any zeros in each row with a fraction of the smallest non-zero
+    value in the corresponding row.
+
+    Args:
+        data (pandas.DataFrame ~ (num_samples, num_genes))
+        scale (optional; float)
+
+    Returns:
+        imputed data (pandas.DataFrame ~ (num_samples, num_genes))
+
+    """
+    v = scale * data[data > 0].min(axis=1)
+    return data.fillna(0).replace(to_replace=0, value=v)
+
+
 class Normalizer(object):
 
     def __init__(self, identifier='symbol'):

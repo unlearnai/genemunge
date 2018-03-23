@@ -1,6 +1,9 @@
 import os
 import pandas
 
+#TODO: use normalize?
+#TODO: use an HDF5 store?
+
 def create_tissue_stats():
     """
     Uses data from the GTEx project to estimate statistics of gene expression
