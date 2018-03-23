@@ -33,7 +33,7 @@ def create_tissue_stats():
     tissues = samples.groupby('smts').groups
     norm = normalize.Normalizer('ensembl_gene_id')
     for t in tissues:
-        print(t)
+        print('processing tissue: {}'.format(t))
         # select the sample ids corresponding to the tissue
         index = list(samples['run'].loc[tissues[t]].values)
         tissue_expression = (expression[index].T)
