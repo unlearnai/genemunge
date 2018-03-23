@@ -39,12 +39,27 @@ class Describer(object):
 
     def close(self):
         """
+        Close the HDF5 store.
+
+        Args:
+            None
+
+        Returns:
+            None
 
         """
         self.tissue_stats.close()
 
     def get_tissue_expression(self, identifier):
         """
+        Get statistics describing the expression of a gene across tissues
+        in healthy people (from GTEx).
+
+        Args:
+            identifier (str)
+
+        Returns:
+            pandas.DataFrame
 
         """
         i = self.get_ensembl(identifier)
