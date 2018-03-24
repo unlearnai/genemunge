@@ -22,6 +22,22 @@ def clean_ensembl_id(identifier):
     return identifier.split('.')[0].upper()
 
 
+def clean_ensembl_ids(identifiers):
+    """
+    Formats ensembl gene identifiers to drop the version number
+
+    E.g., ENSG00000002822.15 -> ENSG00000002822
+
+    Args:
+        identifiers (List[str])
+
+    Returns:
+        identifier (List[str])
+
+    """
+    return list(map(clean_ensembl_id, identifiers))
+
+
 class IDConverter(object):
     """Convert between gene identifiers."""
 

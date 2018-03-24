@@ -69,7 +69,6 @@ class Searcher(object):
         """
         return [term for term in self.go if self.go[term]['namespace'] == namespace]
 
-
     def _keyword_match(self, term, keyword, fields):
         """
         Check if any of the fields of a given term of the gene ontology
@@ -146,7 +145,7 @@ class Searcher(object):
             evidence_codes (None or List[str]):
 
         Returns:
-            genes (List[str]): list of genes by UniprotKB id
+            genes (List[str]): list of genes by ensembl_gene_id
 
         """
         if evidence_codes is not None:
@@ -163,7 +162,7 @@ class Searcher(object):
             None
 
         Returns:
-            genes (List[str]): list of genes by UniprotKB id
+            genes (List[str]): list of genes by ensembl_gene_id
 
         """
         return self.attributes["housekeeping_genes"]
@@ -177,7 +176,7 @@ class Searcher(object):
             None
 
         Returns:
-            genes (List[str]): list of genes by UniprotKB id
+            genes (List[str]): list of genes by ensembl_gene_id
 
         """
         return self.attributes["transcription_factors"]

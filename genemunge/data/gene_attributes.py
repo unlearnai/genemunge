@@ -25,10 +25,10 @@ def create_attributes_file():
     tfs = pandas.read_csv(os.path.join(filedir, "TFCheckpoint_download_180515.txt"),
                           sep='\t')
     tf_symbols = list(tfs[tfs['TFClass_human'] == 'TFclass']['gene_symbol'])
-    # convert gene symbols to uniprot ids to be consistent with GO
-    converter = convert.IDConverter("symbol", "uniprot_ids")
-    hk_uniprot = converter.convert_list(hk_symbols)
-    tf_uniprot = converter.convert_list(tf_symbols)
+    # convert gene symbols to ensembl ids to be consistent
+    converter = convert.IDConverter("symbol", "ensembl_gene_id")
+    hk_uniprot = [x for x in converter.convert_list(hk_symbols) if x == x]
+    tf_uniprot = [x for x in converter.convert_list(tf_symbols) if x == x]
     # write to a file
     with open(os.path.join(filedir, 'gene_attributes.json'), 'w') as out:
         json.dump({'housekeeping_genes': hk_uniprot,
