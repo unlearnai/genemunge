@@ -15,7 +15,6 @@ def setup_data():
 
     """
     import genemunge, subprocess, os
-    print('\n\ndownloading\n\n')
     genemunge.data.downloads.download_everything(force=True)
     genemunge.data.parse_go.make_godict(genemunge.data.parse_go.GOFILE, force=True)
     # process the gene attributes
