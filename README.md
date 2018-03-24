@@ -44,9 +44,17 @@ Other:
  
  `['symbol','name','entrez_id','ensembl_gene_id','refseq_accession','uniprot_ids']`
  
- ## Citations
+```
+## Install
+This package requires `R` and the `recount` package from `bioconductor`.
+```
+source("https://bioconductor.org/biocLite.R")
+biocLite("recount")
+```
+ 
+## Citations
  
  
- ## Similar Tools
+## Similar Tools
  
  
