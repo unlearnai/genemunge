@@ -1,25 +1,12 @@
 # genemunge
-Tools for munging genomic data
+Tools for munging genomic data such as:
+ - Converting between different types of gene identifiers
+ - Searching for terms in the Gene Ontology (GO) associated with a keyword
+ - Looking up housekeeping genes and transcription factors
+ - Getting a list of GO terms associated with a given gene
+ - Looking up how a gene is expressed across tissues
+ - Normalizing a matrix of gene expression data by converting to TPM
 
-Example usage: getting proteins associated with the keywords ["immune"]
-```
-import genemunge
-
-# set up a searcher
-searcher = genemunge.search.Searcher()
-
-# get the gene ontology terms associated with the keywords
-# setting 'exact=False' will traverse the ontology graph and
-# get all of the child terms as well
-associated_terms = searcher.keyword_search(["immune"], exact=False)
-
-# get the proteins associated with these terms as uniprot_ids
-# set 'evidence_codes=None' to get all of the proteins
-uniprot_ids = searcher.get_proteins(associated_terms, evidence_codes=None)
-
-# convert the uniprot_ids to gene symbols
-converter = genemunge.convert.IDConverter("uniprot_ids", "symbol")
-gene_symbols = converter.convert(uniprot_ids)
 ```
 
 ## GO evidence codes
@@ -56,3 +43,10 @@ Other:
  ## Common gene id types
  
  `['symbol','name','entrez_id','ensembl_gene_id','refseq_accession','uniprot_ids']`
+ 
+ ## Citations
+ 
+ 
+ ## Similar Tools
+ 
+ 
