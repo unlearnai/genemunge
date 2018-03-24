@@ -1,4 +1,5 @@
 # genemunge
+
 Tools for munging genomic data such as:
  - Converting between different types of gene identifiers
  - Searching for terms in the Gene Ontology (GO) associated with a keyword
@@ -7,10 +8,9 @@ Tools for munging genomic data such as:
  - Looking up how a gene is expressed across tissues
  - Normalizing a matrix of gene expression data by converting to TPM
 
-```
-
 ## GO evidence codes
 
+```
 Experiment:
  - Inferred from Experiment (EXP)
  - Inferred from Direct Assay (IDA)
@@ -39,22 +39,22 @@ Other:
  - Inferred by Curator (IC)
  - No biological Data available (ND) evidence code
  - Inferred from Electronic Annotation (IEA)
- 
- ## Common gene id types
- 
- `['symbol','name','entrez_id','ensembl_gene_id','refseq_accession','uniprot_ids']`
- 
 ```
+
+## Common gene id types
+
+`['symbol','name','entrez_id','ensembl_gene_id','refseq_accession','uniprot_ids']`
+
 ## Install
+
 This package requires `R` and the `recount` package from `bioconductor`.
 ```
 source("https://bioconductor.org/biocLite.R")
 biocLite("recount")
 ```
- 
+
 ## Citations
- 
- 
+
+
 ## Similar Tools
- 
- 
+

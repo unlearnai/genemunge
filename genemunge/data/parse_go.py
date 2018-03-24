@@ -1,8 +1,5 @@
 import os, re, gzip, itertools, json
 
-from .. import convert
-converter = convert.IDConverter('uniprot_ids', 'ensembl_gene_id')
-
 
 FILEPATH = os.path.dirname(os.path.abspath(__file__))
 GOFILE = os.path.join(FILEPATH, "go-basic.obo")
@@ -247,6 +244,9 @@ def make_godict(gofile, force=False):
         bool
 
     """
+    from .. import convert
+    converter = convert.IDConverter('uniprot_ids', 'ensembl_gene_id')
+
     # check if the outputfile already exists
     if not force and os.path.exists(OUTPUTFILE):
         return True
