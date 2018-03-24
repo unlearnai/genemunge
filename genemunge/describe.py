@@ -66,13 +66,19 @@ class Describer(object):
         return pandas.concat(
                 {k: self.tissue_stats[k].loc[i] for k in self.__stats__}, axis=1)
 
-    def plot_tissue_expression(self, identifier, sortby=None):
+    def plot_tissue_expression(self, identifier, sortby=None, filename=None):
         """
+        Plot the expression of a gene across tissues in health people
+        (from GTEx).
 
         Args:
-
+            identifier (str)
+            sortby (optional; str): 'median', 'mean', 'std', 'lower_quartile'
+                or 'upper_quartile'. if None, then tissues are alphabetical
+            filename (optional; str)
 
         Returns:
+            None
 
         """
         tissue_stats = self.get_tissue_expression(identifier)
@@ -115,6 +121,8 @@ class Describer(object):
         ax.set_title(identifier)
         ax.set_ylabel('TPM')
         plt.show(fig)
+        if filename is not None:
+            fig.savefig(filename)
 
     def gene_gene_info(self, idenifier):
         """
