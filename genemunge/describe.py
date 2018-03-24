@@ -124,9 +124,45 @@ class Describer(object):
         if filename is not None:
             fig.savefig(filename)
 
-    def get_gene_info(self, idenifier):
+    def _get_go_from_ensemble(self, ensembl):
         """
+        Get a list of GO categories associated with the given ensembl id.
+
+        Args:
+            ensemble (str)
+
+        Returns:
+            GO identifiers (List[str])
 
         """
-        pass
+        terms = []
+        for term in self.searcher.go:
+            has_gene = any(ensembl in self.searcher.go[term]["genes"][code]
+                        for code in self.searcher.go[term]["genes"])
+            if has_gene:
+                terms += [term]
+        return list(set(terms))
+
+    def get_gene_info(self, identifier):
+        """
+        Get some information about a gene such as:
+            ensemble_gene_id
+            gene symbol
+            name
+            associated categories in the Gene Ontology
+
+        Args:
+            identifier (str)
+
+        Returns:
+            None
+
+        """
+        gene_info = {}
+        gene_info['ensembl'] = self.get_ensembl(identifier)
+        gene_info['symbol'] = self.get_symbol(gene_info['ensembl'])
+        gene_info['name'] = self.get_name(gene_info['ensembl'])
+        gene_info['ontology'] = {i: self.searcher.go[i]['name']
+            for i in self._get_go_from_ensemble(gene_info['ensembl'])}
+        return gene_info
 
