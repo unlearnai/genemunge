@@ -26,6 +26,7 @@ def setup_data():
             "Rscript " + os.path.join(script_path, 'recount.R') + ' ' + script_path,
             shell=True)
     genemunge.data.gtex.process_gtex.create_tissue_stats()
+    genemunge.data.cleanup.remove_installed_data_files()
 
 
 class PostDevelopCommand(develop):
