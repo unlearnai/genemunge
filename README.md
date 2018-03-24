@@ -7,10 +7,9 @@ Tools for munging genomic data such as:
  - Looking up how a gene is expressed across tissues
  - Normalizing a matrix of gene expression data by converting to TPM
 
-```
-
 ## GO evidence codes
 
+```
 Experiment:
  - Inferred from Experiment (EXP)
  - Inferred from Direct Assay (IDA)
@@ -39,14 +38,15 @@ Other:
  - Inferred by Curator (IC)
  - No biological Data available (ND) evidence code
  - Inferred from Electronic Annotation (IEA)
- 
- ## Common gene id types
- 
- `['symbol','name','entrez_id','ensembl_gene_id','refseq_accession','uniprot_ids']`
- 
+```
+
+## Common gene id types
+
+`['symbol','name','entrez_id','ensembl_gene_id','refseq_accession','uniprot_ids']`
+
  ## Citations
- 
- 
+
+
  ## Similar Tools
- 
- 
+
+
