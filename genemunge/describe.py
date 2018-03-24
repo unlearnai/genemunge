@@ -124,7 +124,7 @@ class Describer(object):
         if filename is not None:
             fig.savefig(filename)
 
-    def gene_gene_info(self, idenifier):
+    def get_gene_info(self, idenifier):
         """
 
         """
