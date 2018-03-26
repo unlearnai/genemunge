@@ -67,7 +67,7 @@ class Searcher(object):
 
 
         """
-        return [term for term in self.go if self.go[term]['namespace'] == namespace]
+        return sorted([term for term in self.go if self.go[term]['namespace'] == namespace])
 
     def _keyword_match(self, term, keyword, fields):
         """
@@ -114,7 +114,7 @@ class Searcher(object):
         exact_terms = list(set(matches) - set(anti_matches) - set(anti_ids))
         if exact:
             return exact_terms
-        return list(set(chain.from_iterable([self.traverse(t) for t in exact_terms])))
+        return sorted(list(set(chain.from_iterable([self.traverse(t) for t in exact_terms]))))
 
     def _get_proteins_from_term(self, term, evidence_codes):
         """
@@ -152,7 +152,7 @@ class Searcher(object):
             assert type(evidence_codes) == list, \
             "evidence_codes must be None or a list of GO evidence codes"
         all_proteins = [self._get_proteins_from_term(t, evidence_codes) for t in terms]
-        return list(set().union(*all_proteins))
+        return sorted(list(set().union(*all_proteins)))
 
     def get_housekeeping_genes(self):
         """
@@ -165,7 +165,7 @@ class Searcher(object):
             genes (List[str]): list of genes by ensembl_gene_id
 
         """
-        return self.attributes["housekeeping_genes"]
+        return sorted(self.attributes["housekeeping_genes"])
 
     def get_transcription_factors(self):
         """
@@ -179,6 +179,6 @@ class Searcher(object):
             genes (List[str]): list of genes by ensembl_gene_id
 
         """
-        return self.attributes["transcription_factors"]
+        return sorted(self.attributes["transcription_factors"])
 
 
