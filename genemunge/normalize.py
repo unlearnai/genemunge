@@ -32,7 +32,7 @@ def impute(data, scale=0.5):
 
     """
     v = scale * data[data > 0].min(axis=1)
-    return data.fillna(0).replace(to_replace=0, value=v)
+    return data.fillna(0).T.replace(to_replace=0, value=v).T
 
 
 class Normalizer(object):
@@ -114,4 +114,3 @@ class Normalizer(object):
 
         """
         return self.tpm_from_rpkm(data, gene_list)
-
