@@ -60,7 +60,7 @@ def create_tissue_stats():
                         tpm.quantile(q=0.75, axis=0)).rename(columns={0.75: t})], axis=1)
         fraction_zero = pandas.concat([
                 fraction_zero, pandas.DataFrame(
-                        (tpm == 0).mean(axis=0), columns=["fraction_zero"])])
+                        (tpm == 0).mean(axis=0), columns=["fraction_zero"])], axis=1)
 
     with pandas.HDFStore(os.path.join(filepath, 'tissue_stats.h5'), 'w') as store:
         store.put('mean', mean)
