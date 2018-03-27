@@ -140,7 +140,7 @@ class IDConverter(object):
         Convert a gene identifier.
 
         Args:
-            id (str): gene identifier to convert
+            identifier (str): gene identifier to convert
 
         Returns:
             str: converted gene identifier
