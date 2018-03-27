@@ -1,4 +1,8 @@
-import os, re, gzip, itertools, json
+import os
+import re
+import gzip
+import itertools
+import json
 
 
 FILEPATH = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +23,8 @@ obsolete = re.compile('is_obsolete: true')
 
 def has_pattern(string, pattern):
     """
-    Check if a string contains a pattern:
+    Check if a string contains a pattern.
+    TODO: currently this will not match substrings of a string
 
     Args:
         string (str)
@@ -241,7 +246,7 @@ def make_godict(gofile, force=False):
         force (optional; bool): overwrite the json file if true
 
     Returns:
-        bool
+        None
 
     """
     from .. import convert
@@ -249,7 +254,7 @@ def make_godict(gofile, force=False):
 
     # check if the outputfile already exists
     if not force and os.path.exists(OUTPUTFILE):
-        return True
+        return
 
     # id: {name, namespace, def, parents, children, genes}
     # connections (parent/child): 'is_a' or 'part_of'
@@ -268,7 +273,7 @@ def make_godict(gofile, force=False):
     # get rid of obselete terms
     not_obsolete = [g for g in grouped if first_match(g, obsolete) is None]
 
-    # get rid of any term that don't have ids
+    # get rid of any term that doesn't have ids
     has_id = [g for g in not_obsolete if first_match(g, go_id) is not None]
 
     # create the go dictionary
@@ -325,8 +330,6 @@ def make_godict(gofile, force=False):
     # write to the file
     with open(OUTPUTFILE, "w") as outfile:
         json.dump(nonempty_godict, outfile)
-
-    return True
 
 
 if __name__ == "__main__":
