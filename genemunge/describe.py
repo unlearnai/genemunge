@@ -14,7 +14,7 @@ gtexpath = os.path.join(datapath, 'gtex')
 
 class Describer(object):
 
-    __stats__ = ['mean', 'median', 'std', 'lower_quartile', 'upper_quartile']
+    __stats__ = ['mean', 'median', 'std', 'lower_quartile', 'upper_quartile', 'fraction_zero']
 
     def __init__(self, identifier='symbol'):
         """
