@@ -29,6 +29,7 @@ def create_tissue_stats():
     std = pandas.DataFrame()
     lower_quartile = pandas.DataFrame()
     upper_quartile = pandas.DataFrame()
+    fraction_zero = pandas.DataFrame()
 
     tissues = samples.groupby('smts').groups
     norm = normalize.Normalizer('ensembl_gene_id')
@@ -57,6 +58,9 @@ def create_tissue_stats():
         upper_quartile = pandas.concat(
                 [upper_quartile, pandas.DataFrame(
                         tpm.quantile(q=0.75, axis=0)).rename(columns={0.75: t})], axis=1)
+        fraction_zero = pandas.concat([
+                fraction_zero, pandas.DataFrame(
+                        (tpm == 0).mean(axis=1), columns=["fraction_zero"])])
 
     with pandas.HDFStore(os.path.join(filepath, 'tissue_stats.h5'), 'w') as store:
         store.put('mean', mean)
@@ -64,3 +68,4 @@ def create_tissue_stats():
         store.put('std', std)
         store.put('lower_quartile', lower_quartile)
         store.put('upper_quartile', upper_quartile)
+        store.put('fraction_zero', fraction_zero)
