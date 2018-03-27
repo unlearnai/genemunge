@@ -105,7 +105,7 @@ def format_indentation(string):
         string: A string.
 
     """
-    return string.replace("    ", "\t")
+    return string.replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;")
 
 def document_modules(modules):
     """

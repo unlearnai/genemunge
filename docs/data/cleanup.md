@@ -11,5 +11,5 @@ def remove_installed_data_files()
 
 
 
-Removes some of the files that are downloaded during install.<br /><br />Args:<br />	None<br /><br />Returns:<br />	None
+Removes some of the files that are downloaded during install.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;None<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;None
 
