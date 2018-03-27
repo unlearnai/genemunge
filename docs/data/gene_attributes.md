@@ -11,5 +11,5 @@ def create_attributes_file()
 
 
 
-Creates a json file with lists (as gene symbols) of housekeeping genes<br />and transcription factors.<br /><br />Args:<br /> ~ None<br /><br />Returns:<br /> ~ None
+Creates a json file with lists (as gene symbols) of housekeeping genes<br />and transcription factors.<br /><br />Args:<br />	None<br /><br />Returns:<br />	None
 
