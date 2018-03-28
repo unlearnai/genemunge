@@ -110,3 +110,10 @@ ENV/
 *.tsv
 *.Rdata
 *.Rhistory
+
+# don't exclude
+!genemunge/data/gene_attributes.json
+!genemunge/data/go.json
+!genemunge/data/hgnc_complete_set.txt
+!genemunge/data/gtex/gene_info.csv
+!genemunge/data/gtex/tissue_stats.h5

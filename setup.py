@@ -39,7 +39,6 @@ class PostDevelopCommand(develop):
 class PostInstallCommand(install):
     """Post-installation data download and processing for installation mode."""
     def run(self):
-        setup_data()
         install.run(self)
 
 
