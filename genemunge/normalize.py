@@ -42,10 +42,10 @@ class Normalizer(object):
         Tools to normalize expression data and transform into TPM.
 
         Args:
-            None
+            identifer (str)
 
         Returns:
-            None
+            Normalizer
 
         """
         # read the gene lengths
@@ -80,7 +80,7 @@ class Normalizer(object):
             subset = data[gene_list]
         else:
             subset = data
-        return 10**6 * subset.divide(subset.sum(axis=1), axis='rows')
+        return 10**6 * subset.divide(subset.sum(axis=1), axis='index')
 
     def tpm_from_counts(self, data, gene_list=None):
         """
@@ -114,4 +114,3 @@ class Normalizer(object):
 
         """
         return self.tpm_from_rpkm(data, gene_list)
-
