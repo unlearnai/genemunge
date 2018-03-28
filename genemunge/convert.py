@@ -8,7 +8,7 @@ FILENAME = os.path.join(FILEPATH, 'hgnc_complete_set.txt')
 
 def clean_ensembl_id(identifier):
     """
-    Formats ensembl gene identifiers to drop the version number.
+    Formats an ensembl gene identifier to drop the version number.
 
     E.g., ENSG00000002822.15 -> ENSG00000002822
 
@@ -32,7 +32,7 @@ def clean_ensembl_ids(identifiers):
         identifiers (List[str])
 
     Returns:
-        identifier (List[str])
+        identifiers (List[str])
 
     """
     return list(map(clean_ensembl_id, identifiers))
@@ -116,16 +116,16 @@ class IDConverter(object):
 
     def _clean_conversion_table(self):
         """
-        Perform some cleanup operations on the converstion table.
+        Perform some cleanup operations on the conversion table.
 
         Notes:
-            Modifies the converstion_table in place!
+            Modifies the conversion_table in place!
 
         Args:
             None
 
         Returns:
-            NOne
+            None
 
         """
         # drop NaN from the source column
@@ -137,13 +137,14 @@ class IDConverter(object):
 
     def convert(self, identifier):
         """
-        Convert a of gene identifier.
+        Convert a gene identifier.
 
         Args:
-            id (str): gene identifier to convert
+            identifier (str): gene identifier to convert
 
         Returns:
             str: converted gene identifier
+
         """
         try:
             return self.conversion_table.loc[identifier][self.target]
@@ -153,13 +154,14 @@ class IDConverter(object):
     # TODO: what about ids where the mapping isn't unique?
     def convert_list(self, ids: List) -> List:
         """
-        Convert an list of gene identifiers.
+        Convert a list of gene identifiers.
 
         Args:
             ids (List[str]): list of gene identifiers to convert
 
         Returns:
             List[str]: list of converted gene identifiers
+
         """
         good_keys = self.conversion_table.index.intersection(ids)
         converted = list(self.conversion_table.loc[good_keys][self.target])

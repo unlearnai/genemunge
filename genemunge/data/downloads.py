@@ -1,4 +1,6 @@
-import urllib.request, os, sys
+import urllib.request
+import os
+import sys
 
 
 FILEPATH = os.path.dirname(os.path.abspath(__file__))
