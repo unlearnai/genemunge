@@ -1,4 +1,5 @@
 import tempfile
+
 from genemunge import describe
 
 import pytest

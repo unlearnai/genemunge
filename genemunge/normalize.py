@@ -85,6 +85,8 @@ class Normalizer(object):
     def tpm_from_counts(self, data, gene_list=None):
         """
         Transform data from counts to TPM.
+        Any genes not in the gene_lengths index is removed,
+            as the gene length is not known.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
@@ -97,13 +99,13 @@ class Normalizer(object):
         if gene_list is not None:
             common_genes = [gene for gene in gene_list if gene in self.gene_lengths.index]
         else:
-            common_genes = list(self.gene_lengths.index)
+            common_genes = [gene for gene in data.columns if gene in self.gene_lengths.index]
         subset = data[common_genes].divide(self.gene_lengths[common_genes], axis='columns')
         return 10**6 * subset.divide(subset.sum(axis=1), axis='rows')
 
     def tpm_from_subset(self, data, gene_list=None):
         """
-        Renormalize a subset of genes.
+        Renormalize a subset of genes already in TPM.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))

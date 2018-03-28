@@ -72,22 +72,23 @@ def test_normalizer_tpm_from_counts(expression_data):
 
     counts = expression_data.counts
     tpm = expression_data.tpm
-    tpm_calc = norm.tpm_from_counts(counts, counts.columns)
+    tpm_calc = norm.tpm_from_counts(counts)
     assert (tpm.columns == tpm_calc.columns).all()
     assert (tpm.index == tpm_calc.index).all()
     assert np.allclose(tpm.values, tpm_calc.values)
 
 
-def test_normalizer_tpm_from_counts(expression_data):
+def test_normalizer_tpm_from_subset(expression_data):
     identifier = 'symbol'
     norm = normalize.Normalizer(identifier=identifier)
 
-    counts = expression_data.counts
     tpm = expression_data.tpm
-    tpm_calc = norm.tpm_from_counts(counts, counts.columns)
-    assert (tpm.columns == tpm_calc.columns).all()
-    assert (tpm.index == tpm_calc.index).all()
-    assert np.allclose(tpm.values, tpm_calc.values)
+    tpm_fullset_calc = norm.tpm_from_subset(tpm)
+    assert np.allclose(tpm.values, tpm_fullset_calc.values)
+
+    tpm_subset_calc = norm.tpm_from_subset(tpm, tpm.columns[:100])
+    tpm_subset_norm = tpm_subset_calc.sum(axis=1).values
+    assert np.allclose(tpm_subset_norm - 1e6, np.zeros_like(tpm_subset_norm))
 
 
 if __name__ == "__main__":
