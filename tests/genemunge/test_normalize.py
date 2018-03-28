@@ -90,7 +90,5 @@ def test_normalizer_tpm_from_counts(expression_data):
     assert np.allclose(tpm.values, tpm_calc.values)
 
 
-
-
 if __name__ == "__main__":
     pytest.main([__file__])

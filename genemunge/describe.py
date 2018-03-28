@@ -62,11 +62,14 @@ class Describer(object):
             pandas.DataFrame
 
         """
-        i = self.get_ensembl(identifier)
-        return pandas.concat(
-                {k: self.tissue_stats[k].loc[i] for k in self.__stats__}, axis=1)
+        gene_id = self.get_ensembl(identifier)
+        if gene_id != gene_id:
+            raise KeyError("Unknown identifier {}".format(identifier))
+        else:
+            return pandas.concat(
+                    {k: self.tissue_stats[k].loc[gene_id] for k in self.__stats__}, axis=1)
 
-    def plot_tissue_expression(self, identifier, sortby=None, filename=None):
+    def plot_tissue_expression(self, identifier, sortby=None, show=True, filename=None):
         """
         Plot the expression of a gene across tissues in health people
         (from GTEx).
@@ -120,9 +123,10 @@ class Describer(object):
         plt.xticks(numpy.arange(len(tissues)) + 1, tissues, rotation='vertical')
         ax.set_title(identifier)
         ax.set_ylabel('TPM')
-        plt.show(fig)
         if filename is not None:
             fig.savefig(filename)
+        if show:
+            plt.show(fig)
 
     def _get_go_from_ensemble(self, ensembl):
         """
@@ -165,4 +169,3 @@ class Describer(object):
         gene_info['ontology'] = {i: self.searcher.go[i]['name']
             for i in self._get_go_from_ensemble(gene_info['ensembl'])}
         return gene_info
-
