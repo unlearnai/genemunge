@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 
@@ -51,7 +51,7 @@ setup(name='genemunge',
       version='0.0',
       description='Tools for munging genomics data',
       long_description=readme(),
-      packages=['genemunge'],
+      packages=find_packages(),
       install_requires=[
           'h5py',
           'matplotlib',
