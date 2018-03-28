@@ -1,7 +1,3 @@
-import os
-import numpy as np
-import pandas as pd
-
 from genemunge import convert
 
 import pytest
