@@ -95,7 +95,7 @@ class Normalizer(object):
 
         """
         if gene_list is not None:
-            common_genes = list(set(gene_list) & set(self.gene_lengths.index))
+            common_genes = [gene for gene in gene_list if gene in self.gene_lengths.index]
         else:
             common_genes = list(self.gene_lengths.index)
         subset = data[common_genes].divide(self.gene_lengths[common_genes], axis='columns')
