@@ -21,10 +21,9 @@ namespace = re.compile('namespace: .*')
 obsolete = re.compile('is_obsolete: true')
 
 
-def has_pattern(string, pattern):
+def begins_with_pattern(string, pattern):
     """
-    Check if a string contains a pattern.
-    TODO: currently this will not match substrings of a string
+    Check if a string begins with a pattern.
 
     Args:
         string (str)
@@ -42,8 +41,8 @@ def has_pattern(string, pattern):
 
 def first_match(iterable, pattern):
     """
-    Get the first item that matches a pattern. Return None if there are no
-    matches.
+    Get the first item that matches a pattern.
+    Return None if there are no matches.
 
     Args:
         iterable (Iterable[str])
@@ -82,7 +81,8 @@ def all_matches(iterable, pattern):
 
 def get_id(group):
     """
-    Get the GO identifier.
+    Get the GO identifier from a list of GO term properties.
+    Finds the first match to the id pattern.
 
     Args:
         group (List[str])
@@ -91,12 +91,13 @@ def get_id(group):
         str
 
     """
-    return first_match(group, go_id).strip().split(':',1)[1].strip()
+    return first_match(group, go_id).split(':',1)[1].strip()
 
 
 def get_name(group):
     """
-    Get the name of the GO category.
+    Get the name of the GO category from a list of GO term properties.
+    Finds the first match to the name pattern.
 
     Args:
         group (List[str])
@@ -105,12 +106,13 @@ def get_name(group):
         str
 
     """
-    return first_match(group, name).strip().split(':',1)[1].strip()
+    return first_match(group, name).split(':',1)[1].strip()
 
 
 def get_namespace(group):
     """
-    Get the namespace of the GO category.
+    Get the namespace of the GO category from a list of GO term properties.
+    Finds the first match to the namespace pattern.
 
     Args:
         group (List[str])
@@ -119,12 +121,13 @@ def get_namespace(group):
         str
 
     """
-    return first_match(group, namespace).strip().split(':',1)[1].strip()
+    return first_match(group, namespace).split(':',1)[1].strip()
 
 
 def get_definition(group):
     """
-    Get the definition of the GO category.
+    Get the definition of the GO category from a list of GO term properties.
+    Finds the first match to the definition pattern and removes an annotation label.
 
     Args:
         group (List[str])
@@ -133,15 +136,16 @@ def get_definition(group):
         str
 
     """
-    tmp = first_match(group, definition).strip().split(':',1)[1].strip()
+    tmp = first_match(group, definition).split(':',1)[1].strip()
     match = re.search(r'"([^"]*)"', tmp)
     return match.groups()[0].strip('"')
 
 
 def get_parents(group):
     """
-    Get all of the parents of a GO category.
+    Get all of the parents of a GO category from a list of GO term properties.
     We say that X is a parent of Y if (Y 'is_a' X) or if (Y is 'part_of' X).
+    Finds matches to the is_a and part_of patterns, then matches GO ids.
 
     Args:
         group (List[str])
@@ -262,10 +266,10 @@ def make_godict(gofile, force=False):
 
     # read in the ontology file
     with open(gofile, "r") as go:
-        unparsed = go.readlines()
+        unparsed = [line.rstrip() for line in go]
 
     # find the indices marking the beginning of each term
-    indices = [i for i, x in enumerate(unparsed) if has_pattern(x, "id:")]
+    indices = [i for i, x in enumerate(unparsed) if begins_with_pattern(x, "id:")]
 
     # group the terms
     grouped = [unparsed[indices[i]: indices[i+1]] for i in range(len(indices)-1)]
