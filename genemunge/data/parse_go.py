@@ -319,21 +319,9 @@ def make_godict(gofile, force=False):
                         # therefore, we have to catch this exception
                         pass
 
-    # remove any empty go categories
-    empty_terms = [term for term in godict if
-    len(set(itertools.chain.from_iterable(godict[term]['genes'].values()))) == 0]
-    nonempty_godict = {term: godict[term] for term in godict if term not in empty_terms}
-
-    # remove the empty go categories from parents and children lists
-    for term in nonempty_godict:
-        nonempty_godict[term]['parents'] = \
-        list(set(nonempty_godict[term]['parents']).difference(empty_terms))
-        nonempty_godict[term]['children'] = \
-        list(set(nonempty_godict[term]['children']).difference(empty_terms))
-
     # write to the file
     with open(OUTPUTFILE, "w") as outfile:
-        json.dump(nonempty_godict, outfile)
+        json.dump(godict, outfile)
 
 
 if __name__ == "__main__":
