@@ -38,22 +38,16 @@ class Searcher(object):
             list of GO ids (List[str])
 
         """
-        if inclusive:
-            relatives = [term]
-        else:
-            relatives = []
+        descendants = [term] if inclusive else []
+        children = [term]
+        descendant_count = -1
 
-        new_relatives = self.go[term]['children']
+        while descendant_count < len(descendants):
+            descendant_count = len(descendants)
+            children = sum([self.go[t]['children'] for t in children], [])
+            descendants = list(set(descendants).union(children))
 
-        while True:
-            update = list(set(relatives).union(new_relatives))
-            if len(relatives) == len(update):
-                break
-            else:
-                relatives = update
-            new_relatives = chain.from_iterable([self.go[t]['children'] for t in new_relatives])
-
-        return relatives
+        return descendants
 
     def select_namespace(self, namespace):
         """
@@ -180,5 +174,3 @@ class Searcher(object):
 
         """
         return sorted(self.attributes["transcription_factors"])
-
-
