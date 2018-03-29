@@ -32,7 +32,7 @@ def impute(data, scale=0.5):
 
     """
     v = scale * data[data > 0].min(axis=1)
-    return data.fillna(0).replace(to_replace=0, value=v)
+    return data.fillna(0).T.replace(to_replace=0, value=v).T
 
 
 class Normalizer(object):
@@ -85,6 +85,8 @@ class Normalizer(object):
     def tpm_from_counts(self, data, gene_list=None):
         """
         Transform data from counts to TPM.
+        Any genes not in the gene_lengths index is removed,
+            as the gene length is not known.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
@@ -95,15 +97,15 @@ class Normalizer(object):
 
         """
         if gene_list is not None:
-            common_genes = list(set(gene_list) & set(self.gene_lengths.index))
+            common_genes = [gene for gene in gene_list if gene in self.gene_lengths.index]
         else:
-            common_genes = list(self.gene_lengths.index)
+            common_genes = [gene for gene in data.columns if gene in self.gene_lengths.index]
         subset = data[common_genes].divide(self.gene_lengths[common_genes], axis='columns')
         return 10**6 * subset.divide(subset.sum(axis=1), axis='rows')
 
     def tpm_from_subset(self, data, gene_list=None):
         """
-        Renormalize a subset of genes.
+        Renormalize a subset of genes already in TPM.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))

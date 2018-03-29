@@ -38,22 +38,17 @@ class Searcher(object):
             list of GO ids (List[str])
 
         """
-        if inclusive:
-            relatives = [term]
-        else:
-            relatives = []
+        descendants = set([term]) if inclusive else set([])
+        children = [term]
+        descendant_count = -1
 
-        new_relatives = self.go[term]['children']
+        while descendant_count < len(descendants):
+            descendant_count = len(descendants)
+            children = set(sum([self.go[t]['children'] for t in children], []))
+            children = children - set(descendants)
+            descendants = descendants.union(children)
 
-        while True:
-            update = list(set(relatives).union(new_relatives))
-            if len(relatives) == len(update):
-                break
-            else:
-                relatives = update
-            new_relatives = chain.from_iterable([self.go[t]['children'] for t in new_relatives])
-
-        return relatives
+        return list(descendants)
 
     def select_namespace(self, namespace):
         """
@@ -72,7 +67,7 @@ class Searcher(object):
     def _keyword_match(self, term, keyword, fields):
         """
         Check if any of the fields of a given term of the gene ontology
-        are (or are not) associatedd with a given keyword.
+        are (or are not) associated with a given keyword.
 
         Args:
             term (str): a GO id
@@ -130,9 +125,9 @@ class Searcher(object):
 
         """
         proteins = []
-        for code in self.go[term]["genes"]:
-            if evidence_codes is None or code in evidence_codes:
-                proteins += self.go[term]["genes"][code]
+        codes = evidence_codes or self.go[term]["genes"].keys()
+        for code in codes:
+            proteins += self.go[term]["genes"][code]
         return proteins
 
     def get_genes(self, terms, evidence_codes = None):
@@ -180,5 +175,3 @@ class Searcher(object):
 
         """
         return sorted(self.attributes["transcription_factors"])
-
-
