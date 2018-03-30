@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 
@@ -39,7 +39,6 @@ class PostDevelopCommand(develop):
 class PostInstallCommand(install):
     """Post-installation data download and processing for installation mode."""
     def run(self):
-        setup_data()
         install.run(self)
 
 
@@ -52,7 +51,12 @@ setup(name='genemunge',
       version='0.0',
       description='Tools for munging genomics data',
       long_description=readme(),
-      packages=['genemunge'],
+      packages=find_packages(),
+      package_data={'genemunge': ['data/gene_attributes.json',
+                                  'data/go.json',
+                                  'data/hgnc_complete_set.txt',
+                                  'data/gtex/gene_info.csv',
+                                  'data/gtex/tissue_stats.h5']},
       install_requires=[
           'h5py',
           'matplotlib',

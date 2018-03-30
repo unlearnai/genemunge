@@ -253,7 +253,7 @@ def make_godict(gofile, force=False):
         None
 
     """
-    from .. import convert
+    from genemunge import convert
     converter = convert.IDConverter('uniprot_ids', 'ensembl_gene_id')
 
     # check if the outputfile already exists
