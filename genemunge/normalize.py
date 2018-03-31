@@ -1,5 +1,6 @@
 import os
 import pandas
+import numpy
 
 from . import convert
 
@@ -33,6 +34,30 @@ def impute(data, scale=0.5):
     """
     v = scale * data[data > 0].min(axis=1)
     return data.fillna(0).T.replace(to_replace=0, value=v).T
+
+
+def remove_unwanted_variation(Y, hk_genes):
+    """
+    Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
+
+    "Correcting gene expression data when neither the unwanted variation nor the
+    factor of interest are observed."
+    Biostatistics 17.1 (2015): 16-28.
+    Jacob, Laurent, Johann A. Gagnon-Bartsch, and Terence P. Speed.
+
+    Args:
+        data (pandas.DataFrame ~ (num_samples, num_genes))
+        hk_genes (List[str]): list of housekeeping genes
+
+    Returns:
+        batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
+
+    """
+    H = Y[hk_genes]
+    U, L, V = numpy.linalg.svd(H)
+    W = U * L
+    B = numpy.dot(W, numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W)), numpy.dot(W.T, Y)))
+    return Y - B
 
 
 class Normalizer(object):
