@@ -154,5 +154,6 @@ class Normalizer(object):
             pandas.DataFrame
 
         """
-        return self.tpm_from_rpkm(data, gene_list)
+        log_transformed = numpy.log(self.tpm_from_subset(data, gene_list))
+        return log_transformed.subtract(log_transformed.mean(axis=1), axis=0)
 
