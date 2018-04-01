@@ -157,3 +157,18 @@ class Normalizer(object):
         log_transformed = numpy.log(self.tpm_from_subset(data, gene_list))
         return log_transformed.subtract(log_transformed.mean(axis=1), axis=0)
 
+    def tpm_from_clr(self, data, gene_list=None):
+        """
+        Compute data in TPM format from centered log ratio transformed data.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+            gene_list (optional; List[str]): a list of gene ids
+
+        Returns:
+            pandas.DataFrame
+
+        """
+        return self.tpm_from_rpkm(numpy.exp(data), gene_list)
+
+
