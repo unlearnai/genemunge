@@ -141,3 +141,18 @@ class Normalizer(object):
 
         """
         return self.tpm_from_rpkm(data, gene_list)
+
+    def clr_from_tpm(self, data, gene_list=None):
+        """
+        Compute the centered log ratio transform of data in TPM format.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+            gene_list (optional; List[str]): a list of gene ids
+
+        Returns:
+            pandas.DataFrame
+
+        """
+        return self.tpm_from_rpkm(data, gene_list)
+
