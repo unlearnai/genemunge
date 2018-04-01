@@ -171,4 +171,28 @@ class Normalizer(object):
         """
         return self.tpm_from_rpkm(numpy.exp(data), gene_list)
 
+    def ruv2(self, data, gene_list=None, hk_genes=None):
+        """
+        Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm on
+        the centered log ratio transformed TPM data after imputation.
+
+        Inverts the CLR transform after batch correction to return the data in
+        TPM format.
+
+        "Correcting gene expression data when neither the unwanted variation nor the
+        factor of interest are observed."
+        Biostatistics 17.1 (2015): 16-28.
+        Jacob, Laurent, Johann A. Gagnon-Bartsch, and Terence P. Speed.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+            hk_genes (List[str]): list of housekeeping genes
+
+        Returns:
+            batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
+
+        """
+        transformed = self.clr_from_tpm(impute(data), gene_list)
+        batch_corrected = remove_unwanted_variation(transformed, hk_genes)
+        return self.tpm_from_clr(batch_corrected)
 
