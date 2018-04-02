@@ -1,6 +1,8 @@
 import os
 import pandas
 import numpy
+import pickle
+from pathlib import Path
 
 from . import convert
 
@@ -218,3 +220,35 @@ class RemoveUnwantedVariation(object):
         self.fit(data, hk_genes)
         return self.transform(data)
 
+    def save(self, filename, overwrite_existing=False):
+        """
+        Save the RUV object to filename.
+
+        Args:
+            filename (string): absolute path to save file
+            overwrite_existing (bool): whether or not to overwrite existing file
+
+        Returns:
+            None
+
+        """
+        path = Path(filename)
+        assert overwrite_existing or not path.exists(), \
+            "Must allow overwriting existing files"
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename):
+        """
+        Create an RUV from a saved object.
+
+        Args:
+            filename (str)
+
+        Returns:
+            RemoveUnwantedVaraition
+
+        """
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
