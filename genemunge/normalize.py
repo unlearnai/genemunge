@@ -202,3 +202,19 @@ class RemoveUnwantedVariation(object):
                                     numpy.dot(self.W.T, data)))
         return data - B
 
+    def fit_transform(self, data, hk_genes):
+        """
+        Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
+                expression data
+            hk_genes (List[str]): list of housekeeping genes
+
+        Returns:
+            batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
+
+        """
+        self.fit(data, hk_genes)
+        return self.transform(data)
+
