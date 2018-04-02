@@ -91,5 +91,15 @@ def test_normalizer_tpm_from_subset(expression_data):
     assert np.allclose(tpm_subset_norm - 1e6, np.zeros_like(tpm_subset_norm))
 
 
+def test_clr_functions(expression_data):
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+
+    tpm = normalize.impute(expression_data.tpm)
+    clr = norm.clr_from_tpm(tpm)
+    tpm_from_clr = norm.tpm_from_clr(clr)
+
+    assert np.allclose(tpm, tpm_from_clr)
+
 if __name__ == "__main__":
     pytest.main([__file__])
