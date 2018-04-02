@@ -6,6 +6,19 @@ from pathlib import Path
 
 from . import convert
 
+def do_nothing(data):
+    """
+    A function that does nothing.
+
+    Args:
+        Anything
+
+    Returns:
+        Anything
+
+    """
+    return data
+
 
 def deduplicate(data):
     """
@@ -120,19 +133,21 @@ class Normalizer(object):
         """
         return self.tpm_from_rpkm(data, gene_list)
 
-    def clr_from_tpm(self, data, gene_list=None):
+    def clr_from_tpm(self, data, gene_list=None, imputer=do_nothing):
         """
         Compute the centered log ratio transform of data in TPM format.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
             gene_list (optional; List[str]): a list of gene ids
+            imputer (optional; callable)
 
         Returns:
             pandas.DataFrame
 
         """
-        log_transformed = numpy.log(self.tpm_from_subset(data, gene_list))
+        imputed = self.tpm_from_subset(imputer(data), gene_list)
+        log_transformed = numpy.log(imputed)
         return log_transformed.subtract(log_transformed.mean(axis=1), axis=0)
 
     def tpm_from_clr(self, data, gene_list=None):
