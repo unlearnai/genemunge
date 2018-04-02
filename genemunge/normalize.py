@@ -152,7 +152,7 @@ class Normalizer(object):
 
 class RemoveUnwantedVariation(object):
 
-    def __init__(self):
+    def __init__(self, alpha=None):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
 
@@ -162,17 +162,18 @@ class RemoveUnwantedVariation(object):
         Jacob, Laurent, Johann A. Gagnon-Bartsch, and Terence P. Speed.
 
         Args:
-            None
+            alpha (optional; numpy array ~(num_singular_values, num_genes))
 
         Returns:
             RemoveUnwantedVariation
 
         """
-        pass
+        self.alpha = alpha
 
     def fit(self, data, hk_genes):
         """
-        Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
+        Perform a singular value decomposition of the housekeeping genes to fit
+        fit the transform.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
@@ -183,9 +184,15 @@ class RemoveUnwantedVariation(object):
             None
 
         """
+        # solve for W ~ (num_samples, num_singular_values)
         houskeeping = data[hk_genes]
         U, L, V = numpy.linalg.svd(houskeeping)
-        self.W = U * L
+        W = U * L
+        # solve for alpha ~ (num_singular_values, num_genes)
+        self.alpha = numpy.dot(W, numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W)),
+                                    numpy.dot(W.T, data)))
+        # store inverse of inner products J ~ (num_singular_values, num_singular_values)
+        self.J = numpy.linalg.inv(numpy.dot(self.alpha, self.alpha.T))
 
     def transform(self, data):
         """
@@ -200,9 +207,8 @@ class RemoveUnwantedVariation(object):
             batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
 
         """
-        B = numpy.dot(self.W, numpy.dot(numpy.linalg.inv(numpy.dot(self.W.T, self.W)),
-                                    numpy.dot(self.W.T, data)))
-        return data - B
+        delta = numpy.dot(numpy.dot(numpy.dot(data, self.alpha.T), self.J), self.alpha)
+        return data - delta
 
     def fit_transform(self, data, hk_genes):
         """
