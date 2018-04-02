@@ -154,15 +154,19 @@ class RemoveUnwantedVariation(object):
 
     def __init__(self, alpha=None):
         """
-        Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
+        Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm
+        defined in:
 
         "Correcting gene expression data when neither the unwanted variation nor the
         factor of interest are observed."
         Biostatistics 17.1 (2015): 16-28.
         Jacob, Laurent, Johann A. Gagnon-Bartsch, and Terence P. Speed.
 
+        The algorithm is modified slightly so that batch correction can be
+        applied out-of-sample.
+
         Args:
-            alpha (optional; numpy array ~(num_singular_values, num_genes))
+            alpha (optional; numpy array ~ (num_singular_values, num_genes))
 
         Returns:
             RemoveUnwantedVariation
@@ -174,6 +178,24 @@ class RemoveUnwantedVariation(object):
         """
         Perform a singular value decomposition of the housekeeping genes to fit
         fit the transform.
+
+        Suppose that we measure data on the expression of N genes in M samples
+        and store these (after CLR transformation) in a matrix Y \in R^{M, N}.
+        We consider a linear model Y = X B + W A + noise where
+            X \in R^{M, Q} are some unobserved, but biologically interesting, factors
+            B \in R^{Q, N} describes how the genes are coupled to the interesting factors
+            W \in R^{M, K} are some unobserved and uninteresting factors
+            A \in R^{K, N} describes how the genes are coupled to the uninteresting factors
+
+        We assume that there are some housekeeping genes Y_c for which we are
+        sure that B_c = 0. That is, the housekeeping genes are not coupled to
+        any biologically interesting factors. Therefore, we have Y_c = W A_c + noise.
+        Let Y_c = U L V^{T} be the singular value decomposition of Y_c. Then,
+        we can estiamte W = U L.
+
+        Now, if we fix W and assume that X B = 0 for all genes then we can
+        estimate A = (W W^{T})^{-1} W^{T} Y. This matrix stores K patterns of
+        variation that are usually not biologically interesting.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
@@ -197,6 +219,20 @@ class RemoveUnwantedVariation(object):
     def transform(self, data):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
+
+        The `fit` method estimates the matrix
+            A \in R^{K, N} which describes how the genes are coupled to the
+            uninteresting factors
+
+        We can estimate the activity of these factors from a new dataset \tilde{Y}
+        by computing \tilde{W} = \tilde{Y} A^{T} (A A^{T})^{-1} using the right
+        pseudoinverse of A.
+
+        Finally, we can subtract \tilde{W} A from the data by computing
+        \tilde{Y} - \tilde{Y} A^{T} (A A^{T})^{-1} A.
+
+        Essentially, we are removing the components of the data that project
+        onto the pre-defined axes of uninteresting variation.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
