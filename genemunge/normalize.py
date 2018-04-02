@@ -241,10 +241,8 @@ class RemoveUnwantedVariation(object):
         housekeeping = data[hk_genes]
         U, L, V = self._nonzero_svd(housekeeping)
         W = U * L
-        print(W.shape)
         # solve for alpha ~ (num_singular_values, num_genes)
-        self.alpha = numpy.dot(W, numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W)),
-                                    numpy.dot(W.T, data)))
+        self.alpha = numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W)), numpy.dot(W.T, data))
         # store inverse of inner products J ~ (num_singular_values, num_singular_values)
         self.J = numpy.linalg.inv(numpy.dot(self.alpha, self.alpha.T))
 

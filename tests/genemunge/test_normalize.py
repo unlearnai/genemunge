@@ -113,14 +113,10 @@ def test_remove_unwanted_variation():
     alpha = np.random.randn(num_hidden_factors, num_genes)
 
     Y = pd.DataFrame(np.dot(W, alpha))
-
     ruv = normalize.RemoveUnwantedVariation()
     Y_tilde = ruv.fit_transform(Y, np.arange(num_genes))
 
-    assert False
-
-
-
+    assert np.allclose(Y_tilde, 0)
 
 
 if __name__ == "__main__":
