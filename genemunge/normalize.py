@@ -189,6 +189,22 @@ class RemoveUnwantedVariation(object):
         """
         self.alpha = alpha
 
+    def _nonzero_svd(self, matrix):
+        """
+        Compute the singular value decomposition of a matrix and get rid
+        of any singular vectors with a zero singular value.
+
+        Args:
+            matrix (numpy array)
+
+        Returns:
+            U, L, V where M = U L V^{T}
+
+        """
+        U, L, V = numpy.linalg.svd(matrix, full_matrices=False)
+        mask = ~numpy.isclose(L, 0)
+        return U[:, mask], L[mask], V[mask, :]
+
     def fit(self, data, hk_genes):
         """
         Perform a singular value decomposition of the housekeeping genes to fit
@@ -222,9 +238,10 @@ class RemoveUnwantedVariation(object):
 
         """
         # solve for W ~ (num_samples, num_singular_values)
-        houskeeping = data[hk_genes]
-        U, L, V = numpy.linalg.svd(houskeeping)
+        housekeeping = data[hk_genes]
+        U, L, V = self._nonzero_svd(housekeeping)
         W = U * L
+        print(W.shape)
         # solve for alpha ~ (num_singular_values, num_genes)
         self.alpha = numpy.dot(W, numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W)),
                                     numpy.dot(W.T, data)))
