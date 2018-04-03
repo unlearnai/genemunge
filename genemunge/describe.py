@@ -114,7 +114,7 @@ class Describer(object):
             lq = stats.loc[tissue]['lower_quartile']
             uq = stats.loc[tissue]['upper_quartile']
 
-            lower_whisker = mean - 1.5 * std
+            lower_whisker = max(0, mean - 1.5 * std) # clamp at 0 expression
             upper_whisker = mean + 1.5 * std
 
             boxes['medians'][i].set_ydata([med, med])
@@ -127,7 +127,7 @@ class Describer(object):
             min_y = min(min_y, lower_whisker)
             max_y = max(max_y, upper_whisker)
 
-        ax.set_ylim([min_y - 0.1 * abs(min_y), max_y + 0.1 * abs(max_y)])
+        ax.set_ylim([min_y - 0.1 * min_y, max_y + 0.1 * max_y])
         plt.xticks(numpy.arange(len(tissues)) + 1, tissues, rotation='vertical')
         ax.set_title(identifier)
         ax.set_ylabel('TPM')
@@ -136,8 +136,7 @@ class Describer(object):
             plt.show(fig)
         if filename is not None:
             fig.tight_layout()
-            fig.savefig(filename)
-
+            fig.savefig(filename, bbox_inches='tight', dpi=300)
 
     def _get_go_from_ensemble(self, ensembl):
         """
