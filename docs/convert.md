@@ -23,7 +23,7 @@ def convert(self, identifier)
 
 
 
-Convert a of gene identifier.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;id (str): gene identifier to convert<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;str: converted gene identifier
+Convert a gene identifier.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (str): gene identifier to convert<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;str: converted gene identifier
 
 
 ### convert\_list
@@ -35,7 +35,7 @@ def convert_list(self, ids: List) -> List
 
 
 
-Convert an list of gene identifiers.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;ids (List[str]): list of gene identifiers to convert<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;List[str]: list of converted gene identifiers
+Convert a list of gene identifiers.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;ids (List[str]): list of gene identifiers to convert<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;List[str]: list of converted gene identifiers
 
 
 
@@ -55,7 +55,7 @@ def clean_ensembl_id(identifier)
 
 
 
-Formats ensembl gene identifiers to drop the version number.<br /><br />E.g., ENSG00000002822.15 -> ENSG00000002822<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (str)<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (str)
+Formats an ensembl gene identifier to drop the version number.<br /><br />E.g., ENSG00000002822.15 -> ENSG00000002822<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (str)<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (str)
 
 
 ### clean\_ensembl\_ids
@@ -67,5 +67,5 @@ def clean_ensembl_ids(identifiers)
 
 
 
-Formats ensembl gene identifiers to drop the version number<br /><br />E.g., ENSG00000002822.15 -> ENSG00000002822<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifiers (List[str])<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (List[str])
+Formats ensembl gene identifiers to drop the version number<br /><br />E.g., ENSG00000002822.15 -> ENSG00000002822<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifiers (List[str])<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifiers (List[str])
 

@@ -4,7 +4,7 @@
 ### \_\_init\_\_
 ```py
 
-def __init__(self, identifier='symbol')
+def __init__(self, identifier='symbol', load_tissue_data=True)
 
 ```
 
@@ -22,7 +22,7 @@ def close(self)
 
 
 
-Close the HDF5 store.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;None<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;None
+Close the tissue stats HDF5 store if it is open.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;None<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;None
 
 
 ### get\_gene\_info
@@ -52,7 +52,7 @@ Get statistics describing the expression of a gene across tissues<br />in health
 ### plot\_tissue\_expression
 ```py
 
-def plot_tissue_expression(self, identifier, sortby=None, filename=None)
+def plot_tissue_expression(self, identifier, sortby=None, show=True, filename=None)
 
 ```
 
