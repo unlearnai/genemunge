@@ -6,6 +6,7 @@ from genemunge import normalize
 
 import pytest
 
+np.random.seed(137)
 
 ExpressionData = namedtuple("ExpressionData", ["counts", "tpm", "rpkm"])
 
@@ -89,6 +90,56 @@ def test_normalizer_tpm_from_subset(expression_data):
     tpm_subset_calc = norm.tpm_from_subset(tpm, tpm.columns[:100])
     tpm_subset_norm = tpm_subset_calc.sum(axis=1).values
     assert np.allclose(tpm_subset_norm - 1e6, np.zeros_like(tpm_subset_norm))
+
+
+def test_clr_functions(expression_data):
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+
+    tpm = normalize.impute(expression_data.tpm)
+    clr = norm.clr_from_tpm(tpm)
+    tpm_from_clr = norm.tpm_from_clr(clr)
+
+    assert np.allclose(tpm, tpm_from_clr)
+
+
+def test_remove_unwanted_variation_noX():
+    num_samples = 100
+    num_genes = 1000
+    num_hidden_factors = 10
+
+    W = np.random.randn(num_samples, num_hidden_factors)
+    alpha = np.random.randn(num_hidden_factors, num_genes)
+
+    Y = pd.DataFrame(np.dot(W, alpha))
+    ruv = normalize.RemoveUnwantedVariation()
+    Y_tilde = ruv.fit_transform(Y, np.arange(num_genes))
+
+    assert np.allclose(Y_tilde, 0)
+
+
+def test_remove_unwanted_variation():
+    num_samples = 200
+    num_genes = 1000
+    num_hk_genes = 100
+    num_X_factors = 20
+    num_W_factors = 10
+
+    X = np.random.randn(num_samples, num_X_factors)
+    beta = np.random.randn(num_X_factors, num_genes)
+
+    W = np.random.randn(num_samples, num_W_factors)
+    alpha = np.random.randn(num_W_factors, num_genes)
+
+    Yc = np.dot(W, alpha)[:, :num_hk_genes]
+    Yr = np.dot(X, beta)[:, num_hk_genes:] + np.dot(W, alpha)[:, num_hk_genes:]
+
+    Y = pd.DataFrame(np.hstack([Yc, Yr]))
+    ruv = normalize.RemoveUnwantedVariation()
+    Y_tilde = ruv.fit_transform(Y, np.arange(num_hk_genes))
+
+    # check the W factor count estimate
+    assert ruv.alpha.shape[0] == num_W_factors
 
 
 if __name__ == "__main__":
