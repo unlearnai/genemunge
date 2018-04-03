@@ -16,7 +16,7 @@ class Describer(object):
 
     __stats__ = ['mean', 'median', 'std', 'lower_quartile', 'upper_quartile', 'fraction_zero']
 
-    def __init__(self, identifier='symbol'):
+    def __init__(self, identifier='symbol', load_tissue_data=True):
         """
         Create an object to grab the information that describes a gene.
 
@@ -35,11 +35,17 @@ class Describer(object):
         self.get_name = convert.IDConverter('ensembl_gene_id', 'name').convert
         self.get_symbol = convert.IDConverter('ensembl_gene_id', 'symbol').convert
         self.searcher = search.Searcher()
-        self.tissue_stats = pandas.HDFStore(os.path.join(gtexpath, 'tissue_stats.h5'))
+        tissue_status_filename = os.path.join(gtexpath, 'tissue_stats.h5')
+        if load_tissue_data:
+            self.tissue_stats = {}
+            for k in self.__stats__:
+                self.tissue_stats[k] = pandas.read_hdf(tissue_status_filename, k)
+        else:
+            self.tissue_stats = pandas.HDFStore(tissue_status_filename)
 
     def close(self):
         """
-        Close the HDF5 store.
+        Close the tissue stats HDF5 store if it is open.
 
         Args:
             None
@@ -48,7 +54,10 @@ class Describer(object):
             None
 
         """
-        self.tissue_stats.close()
+        try:
+            self.tissue_stats.close()
+        except AttributeError:
+            pass
 
     def get_tissue_expression(self, identifier):
         """
@@ -65,9 +74,8 @@ class Describer(object):
         gene_id = self.get_ensembl(identifier)
         if gene_id != gene_id:
             raise KeyError("Unknown identifier {}".format(identifier))
-        else:
-            return pandas.concat(
-                    {k: self.tissue_stats[k].loc[gene_id] for k in self.__stats__}, axis=1)
+        return pandas.concat(
+                {k: self.tissue_stats[k].loc[gene_id] for k in self.__stats__}, axis=1)
 
     def plot_tissue_expression(self, identifier, sortby=None, show=True, filename=None):
         """
@@ -123,11 +131,12 @@ class Describer(object):
         plt.xticks(numpy.arange(len(tissues)) + 1, tissues, rotation='vertical')
         ax.set_title(identifier)
         ax.set_ylabel('TPM')
-        plt.subplots_adjust(left=0.10, right=0.95, bottom=0.35, top=0.95)
-        if filename is not None:
-            fig.savefig(filename, bbox_inches='tight', dpi=300)
+
         if show:
             plt.show(fig)
+        if filename is not None:
+            fig.tight_layout()
+            fig.savefig(filename, bbox_inches='tight', dpi=300)
 
     def _get_go_from_ensemble(self, ensembl):
         """
