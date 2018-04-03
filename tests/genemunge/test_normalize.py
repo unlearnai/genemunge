@@ -33,6 +33,7 @@ def expression_data():
 
 
 def test_deduplicate():
+    """Check the deduplication of some data."""
     x = np.random.rand(10, 5)
     df = pd.DataFrame(x, columns=['a', 'a', 'b', 'c', 'b'])
 
@@ -43,6 +44,7 @@ def test_deduplicate():
 
 
 def test_impute(expression_data):
+    """Check the imputation of some expression data."""
     scale = 0.5
     counts = expression_data.counts
     imputed_data = normalize.impute(counts, scale)
@@ -56,6 +58,7 @@ def test_impute(expression_data):
 
 
 def test_normalizer_tpm_from_rpkm(expression_data):
+    """Test the RPKM -> TPM conversion for some expression data."""
     identifier = 'symbol'
     norm = normalize.Normalizer(identifier=identifier)
 
@@ -68,6 +71,7 @@ def test_normalizer_tpm_from_rpkm(expression_data):
 
 
 def test_normalizer_tpm_from_counts(expression_data):
+    """Test the counts -> TPM conversion for some expression data."""
     identifier = 'symbol'
     norm = normalize.Normalizer(identifier=identifier)
 
@@ -80,6 +84,7 @@ def test_normalizer_tpm_from_counts(expression_data):
 
 
 def test_normalizer_tpm_from_subset(expression_data):
+    """Test the TPM -> TPM subset conversion for some expression data."""
     identifier = 'symbol'
     norm = normalize.Normalizer(identifier=identifier)
 
@@ -93,6 +98,7 @@ def test_normalizer_tpm_from_subset(expression_data):
 
 
 def test_clr_functions(expression_data):
+    """Test the TPM -> CLR and CLR -> TPM transforms for some expression data."""
     identifier = 'symbol'
     norm = normalize.Normalizer(identifier=identifier)
 
@@ -104,6 +110,7 @@ def test_clr_functions(expression_data):
 
 
 def test_remove_unwanted_variation_noX():
+    """Test the RUV2 implementation for data with no X."""
     num_samples = 100
     num_genes = 1000
     num_hidden_factors = 10
@@ -119,6 +126,8 @@ def test_remove_unwanted_variation_noX():
 
 
 def test_remove_unwanted_variation():
+    """Test that the RUV2 implementation correctly infers the number
+    of irrelevant factors on a constructed example."""
     num_samples = 200
     num_genes = 1000
     num_hk_genes = 100

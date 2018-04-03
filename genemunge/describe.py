@@ -21,7 +21,7 @@ class Describer(object):
         Create an object to grab the information that describes a gene.
 
         Args:
-            identifier (optional; str): the type of gene identifer you will use
+            identifier (optional; str): the type of gene identifier you will use
                 e.g., 'symbol', 'ensembl_gene_id'
 
         Returns:

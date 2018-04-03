@@ -58,7 +58,7 @@ class Normalizer(object):
         Tools to normalize expression data and transform into TPM.
 
         Args:
-            identifer (str)
+            identifier (str)
 
         Returns:
             Normalizer
