@@ -8,7 +8,7 @@ Tools for munging genomic data such as:
  - Looking up how a gene is expressed across tissues
  - Normalizing a matrix of gene expression data by converting to TPM
 
-Brought to you by [Unlearn.AI](www.unlearn.health). 
+Brought to you by [Unlearn.AI](http://unlearn.health/). 
 
 ## GO evidence codes
 
