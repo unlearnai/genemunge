@@ -16,7 +16,7 @@ class Describer(object):
 
     __stats__ = ['mean', 'median', 'std', 'lower_quartile', 'upper_quartile', 'fraction_zero']
 
-    def __init__(self, identifier='symbol'):
+    def __init__(self, identifier='symbol', load_tissue_data=True):
         """
         Create an object to grab the information that describes a gene.
 
@@ -35,11 +35,17 @@ class Describer(object):
         self.get_name = convert.IDConverter('ensembl_gene_id', 'name').convert
         self.get_symbol = convert.IDConverter('ensembl_gene_id', 'symbol').convert
         self.searcher = search.Searcher()
-        self.tissue_stats = pandas.HDFStore(os.path.join(gtexpath, 'tissue_stats.h5'))
+        tissue_status_filename = os.path.join(gtexpath, 'tissue_stats.h5')
+        if load_tissue_data:
+            self.tissue_stats = {}
+            for k in self.__stats__:
+                self.tissue_stats[k] = pandas.read_hdf(tissue_status_filename, k)
+        else:
+            self.tissue_stats = pandas.HDFStore(tissue_status_filename)
 
     def close(self):
         """
-        Close the HDF5 store.
+        Close the tissue stats HDF5 store if it is open.
 
         Args:
             None
@@ -48,7 +54,10 @@ class Describer(object):
             None
 
         """
-        self.tissue_stats.close()
+        try:
+            self.tissue_stats.close()
+        except AttributeError:
+            pass
 
     def get_tissue_expression(self, identifier):
         """
