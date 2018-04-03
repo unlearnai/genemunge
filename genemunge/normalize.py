@@ -175,7 +175,7 @@ class RemoveUnwantedVariation(object):
         "Correcting gene expression data when neither the unwanted variation nor the
         factor of interest are observed."
         Biostatistics 17.1 (2015): 16-28.
-        Jacob, Laurent, Johann A. Gagnon-Bartsch, and Terence P. Speed.
+        Laurent Jacob, Johann A. Gagnon-Bartsch, and Terence P. Speed.
 
         The algorithm is modified slightly so that batch correction can be
         applied out-of-sample.
@@ -207,7 +207,7 @@ class RemoveUnwantedVariation(object):
 
     def fit(self, data, hk_genes):
         """
-        Perform a singular value decomposition of the housekeeping genes to fit
+        Perform a singular value decomposition of the housekeeping genes to
         fit the transform.
 
         Suppose that we measure data on the expression of N genes in M samples
@@ -237,6 +237,8 @@ class RemoveUnwantedVariation(object):
             None
 
         """
+        # restrict to available housekeeping genes
+        hk_genes_data = [gene for gene in hk_genes if gene in data.columns]
         # solve for W ~ (num_samples, num_singular_values)
         housekeeping = data[hk_genes]
         U, L, V = self._nonzero_svd(housekeeping)
