@@ -250,7 +250,8 @@ class RemoveUnwantedVariation(object):
         if ridge:
             sigma1 = numpy.linalg.eigvals(numpy.dot(W.T, W)).max()
             nu = 0.001 * sigma1
-        penalty_term = nu*nu*np.eye(W.shape[1])
+            print("nu:", nu)
+        penalty_term = nu*numpy.eye(W.shape[1])
         self.alpha = numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W) + penalty_term),
                                numpy.dot(W.T, data))
         # store inverse of inner products J ~ (num_singular_values, num_singular_values)
