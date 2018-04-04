@@ -205,7 +205,7 @@ class RemoveUnwantedVariation(object):
         mask = ~numpy.isclose(L, 0)
         return U[:, mask], L[mask], V[mask, :]
 
-    def fit(self, data, hk_genes, ridge=True, nu=None):
+    def fit(self, data, hk_genes, nu=0):
         """
         Perform a singular value decomposition of the housekeeping genes to
         fit the transform.
@@ -232,9 +232,7 @@ class RemoveUnwantedVariation(object):
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
                 expression data
             hk_genes (List[str]): list of housekeeping genes
-            ridge (bool): True to use an L2 penalty in regressing A.
-            nu (float): A coefficient for the L2 penalty. If None, uses a heuristic
-                from the RUV-2 reference.
+            nu (float): A coefficient for an L2 penalty when fitting A.
 
         Returns:
             None
@@ -247,12 +245,6 @@ class RemoveUnwantedVariation(object):
         U, L, V = self._nonzero_svd(housekeeping)
         W = U * L
         # solve for alpha ~ (num_singular_values, num_genes)
-        if ridge:
-            if nu is None:
-                sigma1 = numpy.linalg.eigvals(numpy.dot(W.T, W)).max()
-                nu = 0.001 * sigma1
-        else:
-            nu = 0
         penalty_term = nu*numpy.eye(W.shape[1])
         self.alpha = numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W) + penalty_term),
                                numpy.dot(W.T, data))
