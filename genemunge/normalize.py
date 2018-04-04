@@ -205,7 +205,7 @@ class RemoveUnwantedVariation(object):
         mask = ~numpy.isclose(L, 0)
         return U[:, mask], L[mask], V[mask, :]
 
-    def fit(self, data, hk_genes):
+    def fit(self, data, hk_genes, nu=0):
         """
         Perform a singular value decomposition of the housekeeping genes to
         fit the transform.
@@ -232,6 +232,7 @@ class RemoveUnwantedVariation(object):
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
                 expression data
             hk_genes (List[str]): list of housekeeping genes
+            nu (float): A coefficient for an L2 penalty when fitting A.
 
         Returns:
             None
@@ -244,7 +245,9 @@ class RemoveUnwantedVariation(object):
         U, L, V = self._nonzero_svd(housekeeping)
         W = U * L
         # solve for alpha ~ (num_singular_values, num_genes)
-        self.alpha = numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W)), numpy.dot(W.T, data))
+        penalty_term = nu*numpy.eye(W.shape[1])
+        self.alpha = numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W) + penalty_term),
+                               numpy.dot(W.T, data))
         # store inverse of inner products J ~ (num_singular_values, num_singular_values)
         self.J = numpy.linalg.inv(numpy.dot(self.alpha, self.alpha.T))
 
@@ -278,7 +281,7 @@ class RemoveUnwantedVariation(object):
         delta = numpy.dot(numpy.dot(numpy.dot(data, self.alpha.T), self.J), self.alpha)
         return data - delta
 
-    def fit_transform(self, data, hk_genes):
+    def fit_transform(self, data, hk_genes, nu=0):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
 
@@ -286,12 +289,13 @@ class RemoveUnwantedVariation(object):
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
                 expression data
             hk_genes (List[str]): list of housekeeping genes
+            nu (float): A coefficient for an L2 penalty when fitting A.
 
         Returns:
             batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
 
         """
-        self.fit(data, hk_genes)
+        self.fit(data, hk_genes, nu)
         return self.transform(data)
 
     def save(self, filename, overwrite_existing=False):
