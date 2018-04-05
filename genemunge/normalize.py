@@ -204,9 +204,10 @@ class RemoveUnwantedVariation(object):
 
         """
         U, L, V = numpy.linalg.svd(matrix, full_matrices=False)
-        # exploit the fact that L is ordered
+        # trim eigenvalues close to 0, exploit the fact that L is ordered
+        L = L[:(~numpy.isclose(L, 0)).sum()]
         cumul_variance_fracs = numpy.cumsum(L**2) / numpy.sum(L**2)
-        L_cutoff = numpy.searchsorted(cumul_variance_fracs, variance_cutoff)
+        L_cutoff = min(len(L), 1+numpy.searchsorted(cumul_variance_fracs, variance_cutoff))
         return U[:, :L_cutoff], L[:L_cutoff], V[:L_cutoff, :]
 
     def fit(self, data, hk_genes, nu=0, variance_cutoff=0.9):
@@ -245,9 +246,9 @@ class RemoveUnwantedVariation(object):
 
         """
         # restrict to available housekeeping genes
-        hk_genes_data = [gene for gene in hk_genes if gene in data.columns]
+        hk_genes_in_data = [gene for gene in hk_genes if gene in data.columns]
         # solve for W ~ (num_samples, num_singular_values)
-        housekeeping = data[hk_genes]
+        housekeeping = data[hk_genes_in_data]
         U, L, V = self._cutoff_svd(housekeeping, variance_cutoff)
         W = U * L
         # solve for alpha ~ (num_singular_values, num_genes)
