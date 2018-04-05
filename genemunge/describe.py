@@ -13,6 +13,22 @@ gtexpath = os.path.join(datapath, 'gtex')
 
 
 class Describer(object):
+    """
+    A descriptor for genes.
+    Includes statistics on gene expression in healthy tissue from GTEx.
+
+    Attributes:
+        __stats__ (List[str]): a class attribute holding statistic names.
+        get_ensembl (callable): an instance of convert.IDConverter.convert
+            to get the Ensembl ID.
+        get_name (callable): an instance of convert.IDConverter.convert
+            to get the gene name.
+        get_symbol (callable): an instance of convert.IDConverter.convert
+            to get the gene symbol.
+        searcher (Searcher): an instance of search.Searcher to get gene info.
+        tissue_stats (dict{str: DataFrame}): per-tissue statistics from GTEx.
+
+    """
 
     __stats__ = ['mean', 'median', 'std', 'lower_quartile', 'upper_quartile', 'fraction_zero']
 
