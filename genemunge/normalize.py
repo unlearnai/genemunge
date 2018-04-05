@@ -52,7 +52,13 @@ def impute(data, scale=0.5):
 
 
 class Normalizer(object):
+    """
+    Tools to change units of expression data, primarily to convert to TPM.
 
+    Attributes:
+        gene_lengths (DataFrame): bp lengths for genes.
+
+    """
     def __init__(self, identifier='symbol'):
         """
         Tools to normalize expression data and transform into TPM.
@@ -166,7 +172,14 @@ class Normalizer(object):
 
 
 class RemoveUnwantedVariation(object):
+    """
+    The RUV-2 algorithm.
 
+    Attributes:
+        alpha (numpy array): the coupling of genes to uninteresting factors.
+        J (numpy array): (alpha . alpha^T)^-1
+
+    """
     def __init__(self, alpha=None):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm
