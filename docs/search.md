@@ -1,6 +1,7 @@
 # Documentation for Search (search.py)
 
 ## class Searcher
+A utility for searching the Gene Ontology.<br /><br />Attributes:<br />    go (dict): the GO data.<br />    attributes (dict): gene attributes
 ### \_\_init\_\_
 ```py
 
@@ -10,7 +11,7 @@ def __init__(self)
 
 
 
-Create a object to search through the gene ontology.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;None<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;Searcher
+Create a object to search through the Gene Ontology.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;None<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;Searcher
 
 
 ### get\_genes

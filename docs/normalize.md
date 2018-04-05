@@ -1,6 +1,7 @@
 # Documentation for Normalize (normalize.py)
 
 ## class RemoveUnwantedVariation
+The RUV-2 algorithm.<br /><br />Attributes:<br />    alpha (numpy array): the coupling of genes to uninteresting factors.<br />    J (numpy array): (alpha . alpha^T)^-1
 ### \_\_init\_\_
 ```py
 
@@ -16,25 +17,25 @@ Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm<br />defined in:<
 ### fit
 ```py
 
-def fit(self, data, hk_genes)
+def fit(self, data, hk_genes, nu=0, variance_cutoff=0.9)
 
 ```
 
 
 
-Perform a singular value decomposition of the housekeeping genes to<br />fit the transform.<br /><br />Suppose that we measure data on the expression of N genes in M samples<br />and store these (after CLR transformation) in a matrix Y \in R^{M, N}.<br />We consider a linear model Y = X B + W A + noise where<br />&nbsp;&nbsp;&nbsp;&nbsp;X \in R^{M, Q} are some unobserved, but biologically interesting, factors<br />&nbsp;&nbsp;&nbsp;&nbsp;B \in R^{Q, N} describes how the genes are coupled to the interesting factors<br />&nbsp;&nbsp;&nbsp;&nbsp;W \in R^{M, K} are some unobserved and uninteresting factors<br />&nbsp;&nbsp;&nbsp;&nbsp;A \in R^{K, N} describes how the genes are coupled to the uninteresting factors<br /><br />We assume that there are some housekeeping genes Y_c for which we are<br />sure that B_c = 0. That is, the housekeeping genes are not coupled to<br />any biologically interesting factors. Therefore, we have Y_c = W A_c + noise.<br />Let Y_c = U L V^{T} be the singular value decomposition of Y_c. Then,<br />we can estiamte W = U L.<br /><br />Now, if we fix W and assume that X B = 0 for all genes then we can<br />estimate A = (W W^{T})^{-1} W^{T} Y. This matrix stores K patterns of<br />variation that are usually not biologically interesting.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expression data<br />&nbsp;&nbsp;&nbsp;&nbsp;hk_genes (List[str]): list of housekeeping genes<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;None
+Perform a singular value decomposition of the housekeeping genes to<br />fit the transform.<br /><br />Suppose that we measure data on the expression of N genes in M samples<br />and store these (after CLR transformation) in a matrix Y \in R^{M, N}.<br />We consider a linear model Y = X B + W A + noise where<br />&nbsp;&nbsp;&nbsp;&nbsp;X \in R^{M, Q} are some unobserved, but biologically interesting, factors<br />&nbsp;&nbsp;&nbsp;&nbsp;B \in R^{Q, N} describes how the genes are coupled to the interesting factors<br />&nbsp;&nbsp;&nbsp;&nbsp;W \in R^{M, K} are some unobserved and uninteresting factors<br />&nbsp;&nbsp;&nbsp;&nbsp;A \in R^{K, N} describes how the genes are coupled to the uninteresting factors<br /><br />We assume that there are some housekeeping genes Y_c for which we are<br />sure that B_c = 0. That is, the housekeeping genes are not coupled to<br />any biologically interesting factors. Therefore, we have Y_c = W A_c + noise.<br />Let Y_c = U L V^{T} be the singular value decomposition of Y_c. Then,<br />we can estiamte W = U L.<br /><br />Now, if we fix W and assume that X B = 0 for all genes then we can<br />estimate A = (W W^{T})^{-1} W^{T} Y. This matrix stores K patterns of<br />variation that are usually not biologically interesting.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expression data<br />&nbsp;&nbsp;&nbsp;&nbsp;hk_genes (List[str]): list of housekeeping genes<br />&nbsp;&nbsp;&nbsp;&nbsp;nu (float): A coefficient for an L2 penalty when fitting A.<br />&nbsp;&nbsp;&nbsp;&nbsp;variance_cutoff (float): the cumulative variance cutoff on SVD<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eigenvalues of Y_c.<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;None
 
 
 ### fit\_transform
 ```py
 
-def fit_transform(self, data, hk_genes)
+def fit_transform(self, data, hk_genes, nu=0, variance_cutoff=0.9)
 
 ```
 
 
 
-Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expression data<br />&nbsp;&nbsp;&nbsp;&nbsp;hk_genes (List[str]): list of housekeeping genes<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
+Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expression data<br />&nbsp;&nbsp;&nbsp;&nbsp;hk_genes (List[str]): list of housekeeping genes<br />&nbsp;&nbsp;&nbsp;&nbsp;nu (float): A coefficient for an L2 penalty when fitting A.<br />&nbsp;&nbsp;&nbsp;&nbsp;variance_cutoff (float): the cumulative variance cutoff on SVD<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eigenvalues of Y_c.<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
 
 
 ### save
@@ -64,6 +65,7 @@ Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.<br /><br />The `
 
 
 ## class Normalizer
+Tools to change units of expression data, primarily to convert to TPM.<br /><br />Attributes:<br />    gene_lengths (DataFrame): bp lengths for genes.
 ### \_\_init\_\_
 ```py
 
@@ -73,7 +75,7 @@ def __init__(self, identifier='symbol')
 
 
 
-Tools to normalize expression data and transform into TPM.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifer (str)<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;Normalizer
+Tools to normalize expression data and transform into TPM.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (str)<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;Normalizer
 
 
 ### clr\_from\_tpm
