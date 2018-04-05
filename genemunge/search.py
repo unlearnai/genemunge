@@ -8,10 +8,17 @@ ATTRIBUTENAME = os.path.join(FILEPATH, 'gene_attributes.json')
 
 
 class Searcher(object):
+    """
+    A utility for searching the Gene Ontology.
 
+    Attributes:
+        go (dict): the GO data.
+        attributes (dict): gene attributes
+
+    """
     def __init__(self):
         """
-        Create a object to search through the gene ontology.
+        Create a object to search through the Gene Ontology.
 
         Args:
             None
