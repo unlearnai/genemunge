@@ -29,15 +29,6 @@ def test_describe_get_tissue_expression_unknown():
     assert False
 
 
-def test_describe_plot_tissue_expression():
-    """Try to plot the GTEx tissue expression for a given gene."""
-    gene_name = 'TP53'
-    desc = describe.Describer(identifier='symbol')
-
-    with tempfile.NamedTemporaryFile() as tf:
-        desc.plot_tissue_expression(gene_name, sortby='std', show=False, filename=tf.name)
-
-
 def test_describe_get_gene_info():
     """Try to get name and GO info for a given gene."""
     gene_name = 'TP53'

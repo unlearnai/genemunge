@@ -8,44 +8,9 @@ Tools for munging genomic data such as:
  - Looking up how a gene is expressed across tissues
  - Normalizing a matrix of gene expression data by converting to TPM
 
-Brought to you by [Unlearn.AI](http://unlearn.health/). 
+## Unlearn.AI
 
-## GO evidence codes
-
-```
-Experiment:
- - Inferred from Experiment (EXP)
- - Inferred from Direct Assay (IDA)
- - Inferred from Physical Interaction (IPI)
- - Inferred from Mutant Phenotype (IMP)
- - Inferred from Genetic Interaction (IGI)
- - Inferred from Expression Pattern (IEP)
-
-Computational:
- - Inferred from Sequence or structural Similarity (ISS)
- - Inferred from Sequence Orthology (ISO)
- - Inferred from Sequence Alignment (ISA)
- - Inferred from Sequence Model (ISM)
- - Inferred from Genomic Context (IGC)
- - Inferred from Biological aspect of Ancestor (IBA)
- - Inferred from Biological aspect of Descendant (IBD)
- - Inferred from Key Residues (IKR)
- - Inferred from Rapid Divergence(IRD)
- - Inferred from Reviewed Computational Analysis (RCA)
-
-Literature:
- - Traceable Author Statement (TAS)
- - Non-traceable Author Statement (NAS)
-
-Other:
- - Inferred by Curator (IC)
- - No biological Data available (ND) evidence code
- - Inferred from Electronic Annotation (IEA)
-```
-
-## Common gene id types
-
-`['symbol','name','entrez_id','ensembl_gene_id','refseq_accession','uniprot_ids']`
+When we’re not developing super awesome open source packages like `genemunge`, we help biopharma partners use unsupervised deep learning to extract insights from their omics data. Learn more at [unlearn.health](http://unlearn.health/). 
 
 ## Install
 
@@ -91,3 +56,40 @@ E. Eisenberg and E.Y. Levanon, Trends in Genetics 29, (2013)
 ## Similar tools
 
 If you know of similar tools that would be helpful references for uses, please contribute an attribution to them here.
+
+## GO evidence codes
+
+```
+Experiment:
+ - Inferred from Experiment (EXP)
+ - Inferred from Direct Assay (IDA)
+ - Inferred from Physical Interaction (IPI)
+ - Inferred from Mutant Phenotype (IMP)
+ - Inferred from Genetic Interaction (IGI)
+ - Inferred from Expression Pattern (IEP)
+
+Computational:
+ - Inferred from Sequence or structural Similarity (ISS)
+ - Inferred from Sequence Orthology (ISO)
+ - Inferred from Sequence Alignment (ISA)
+ - Inferred from Sequence Model (ISM)
+ - Inferred from Genomic Context (IGC)
+ - Inferred from Biological aspect of Ancestor (IBA)
+ - Inferred from Biological aspect of Descendant (IBD)
+ - Inferred from Key Residues (IKR)
+ - Inferred from Rapid Divergence(IRD)
+ - Inferred from Reviewed Computational Analysis (RCA)
+
+Literature:
+ - Traceable Author Statement (TAS)
+ - Non-traceable Author Statement (NAS)
+
+Other:
+ - Inferred by Curator (IC)
+ - No biological Data available (ND) evidence code
+ - Inferred from Electronic Annotation (IEA)
+```
+
+## Common gene id types
+
+`['symbol','name','entrez_id','ensembl_gene_id','refseq_accession','uniprot_ids']`
