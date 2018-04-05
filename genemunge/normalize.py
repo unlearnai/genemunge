@@ -206,8 +206,7 @@ class RemoveUnwantedVariation(object):
         U, L, V = numpy.linalg.svd(matrix, full_matrices=False)
         # exploit the fact that L is ordered
         cumul_variance_fracs = numpy.cumsum(L**2) / numpy.sum(L**2)
-        close_cutoff = 1e-6
-        L_cutoff = numpy.searchsorted(cumul_variance_fracs, variance_cutoff-1e-6)
+        L_cutoff = numpy.searchsorted(cumul_variance_fracs, variance_cutoff)
         return U[:, :L_cutoff], L[:L_cutoff], V[:L_cutoff, :]
 
     def fit(self, data, hk_genes, nu=0, variance_cutoff=0.9):
