@@ -39,7 +39,17 @@ def clean_ensembl_ids(identifiers):
 
 
 class IDConverter(object):
-    """Convert between gene identifiers."""
+    """
+    Convert between gene identifiers.
+
+    Attributes:
+        potential_ids (List): a class attribute specifying the different types
+            of identifiers that may be converted from/to.
+        source (str): the source id type, e.g. 'symbol'
+        target (str): the target id type, e.g. 'name'
+        conversion_table (DataFrame): a conversion table between id types.
+
+    """
 
     potential_ids = ['hgnc_id',
                      'symbol',
