@@ -189,23 +189,28 @@ class RemoveUnwantedVariation(object):
         """
         self.alpha = alpha
 
-    def _nonzero_svd(self, matrix):
+    def _cutoff_svd(self, matrix, variance_cutoff=1):
         """
         Compute the singular value decomposition of a matrix and get rid
-        of any singular vectors with a zero singular value.
+        of any singular vectors below a cumulative variance threshold.
 
         Args:
-            matrix (numpy array)
+            matrix (numpy array): the data
+            variance_cutoff (float): retains only elements of L that contribute
+                to the cumulative fractional variance up to the cutoff.
 
         Returns:
             U, L, V where M = U L V^{T}
 
         """
         U, L, V = numpy.linalg.svd(matrix, full_matrices=False)
-        mask = ~numpy.isclose(L, 0)
-        return U[:, mask], L[mask], V[mask, :]
+        # exploit the fact that L is ordered
+        cumul_variance_fracs = numpy.cumsum(L**2) / numpy.sum(L**2)
+        close_cutoff = 1e-6
+        L_cutoff = numpy.searchsorted(cumul_variance_fracs, variance_cutoff-1e-6)
+        return U[:, :L_cutoff], L[:L_cutoff], V[:L_cutoff, :]
 
-    def fit(self, data, hk_genes, nu=0):
+    def fit(self, data, hk_genes, nu=0, variance_cutoff=0.9):
         """
         Perform a singular value decomposition of the housekeeping genes to
         fit the transform.
@@ -233,6 +238,8 @@ class RemoveUnwantedVariation(object):
                 expression data
             hk_genes (List[str]): list of housekeeping genes
             nu (float): A coefficient for an L2 penalty when fitting A.
+            variance_cutoff (float): the cumulative variance cutoff on SVD
+                eigenvalues of Y_c.
 
         Returns:
             None
@@ -242,7 +249,7 @@ class RemoveUnwantedVariation(object):
         hk_genes_data = [gene for gene in hk_genes if gene in data.columns]
         # solve for W ~ (num_samples, num_singular_values)
         housekeeping = data[hk_genes]
-        U, L, V = self._nonzero_svd(housekeeping)
+        U, L, V = self._cutoff_svd(housekeeping, variance_cutoff)
         W = U * L
         # solve for alpha ~ (num_singular_values, num_genes)
         penalty_term = nu*numpy.eye(W.shape[1])
@@ -281,7 +288,7 @@ class RemoveUnwantedVariation(object):
         delta = numpy.dot(numpy.dot(numpy.dot(data, self.alpha.T), self.J), self.alpha)
         return data - delta
 
-    def fit_transform(self, data, hk_genes, nu=0):
+    def fit_transform(self, data, hk_genes, nu=0, variance_cutoff=0.9):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
 
@@ -290,12 +297,14 @@ class RemoveUnwantedVariation(object):
                 expression data
             hk_genes (List[str]): list of housekeeping genes
             nu (float): A coefficient for an L2 penalty when fitting A.
+            variance_cutoff (float): the cumulative variance cutoff on SVD
+                eigenvalues of Y_c.
 
         Returns:
             batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
 
         """
-        self.fit(data, hk_genes, nu)
+        self.fit(data, hk_genes, nu, variance_cutoff)
         return self.transform(data)
 
     def save(self, filename, overwrite_existing=False):
