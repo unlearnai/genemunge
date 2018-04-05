@@ -1,4 +1,6 @@
 import tempfile
+import matplotlib
+matplotlib.use('Agg') # allows plots to be made without DISPLAY
 
 from genemunge import describe
 
