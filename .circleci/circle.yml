@@ -23,12 +23,12 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
+          - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
       - run:
-          name: install dependencies
+          name: Install Requirements
           command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -36,12 +36,19 @@ jobs:
 
       - save_cache:
           paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+            - "venv"
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
 
       # run tests!
       - run:
-          name: run tests
+          name: Run the Tests
           command: |
             . venv/bin/activate
-            pytest
+            py.test tests --junitxml=test-reports/output.xml
+
+      - store_artifacts:
+          path: test-reports/
+          destination: tr1
+
+      - store_test_results:
+          path: test-reports/
