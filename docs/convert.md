@@ -1,7 +1,7 @@
 # Documentation for Convert (convert.py)
 
 ## class IDConverter
-Convert between gene identifiers.
+Convert between gene identifiers.<br /><br />Attributes:<br />    potential_ids (List): a class attribute specifying the different types<br />        of identifiers that may be converted from/to.<br />    source (str): the source id type, e.g. 'symbol'<br />    target (str): the target id type, e.g. 'name'<br />    conversion_table (DataFrame): a conversion table between id types.
 ### \_\_init\_\_
 ```py
 

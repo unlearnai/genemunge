@@ -1,6 +1,7 @@
 # Documentation for Describe (describe.py)
 
 ## class Describer
+A descriptor for genes.<br />Includes statistics on gene expression in healthy tissue from GTEx.<br /><br />Attributes:<br />    __stats__ (List[str]): a class attribute holding statistic names.<br />    get_ensembl (callable): an instance of convert.IDConverter.convert<br />        to get the Ensembl ID.<br />    get_name (callable): an instance of convert.IDConverter.convert<br />        to get the gene name.<br />    get_symbol (callable): an instance of convert.IDConverter.convert<br />        to get the gene symbol.<br />    searcher (Searcher): an instance of search.Searcher to get gene info.<br />    tissue_stats (dict{str: DataFrame}): per-tissue statistics from GTEx.
 ### \_\_init\_\_
 ```py
 
@@ -10,7 +11,7 @@ def __init__(self, identifier='symbol', load_tissue_data=True)
 
 
 
-Create an object to grab the information that describes a gene.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (optional; str): the type of gene identifer you will use<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.g., 'symbol', 'ensembl_gene_id'<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;Describer
+Create an object to grab the information that describes a gene.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;identifier (optional; str): the type of gene identifier you will use<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.g., 'symbol', 'ensembl_gene_id'<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;Describer
 
 
 ### close
