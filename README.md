@@ -10,7 +10,7 @@ Tools for munging genomic data such as:
 
 ## Unlearn.AI
 
-When we’re not developing super awesome open source packages like `genemunge`, we help biopharma partners use unsupervised deep learning to extract insights from their omics data. Learn more at [unlearn.health](http://unlearn.health/). 
+When we’re not developing super awesome open source packages like `genemunge`, we help biopharma partners use unsupervised deep learning to extract insights from their omics data. Learn more at [unlearn.health](http:/unlearn.health?utm_source=github&utm_medium=web). 
 
 ## Install
 
