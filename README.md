@@ -57,6 +57,8 @@ E. Eisenberg and E.Y. Levanon, Trends in Genetics 29, (2013)
 
 If you know of similar tools that would be helpful references for uses, please contribute an attribution to them here.
 
+1. [goatools](https://github.com/tanghaibao/goatools)
+
 ## GO evidence codes
 
 ```
