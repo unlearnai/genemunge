@@ -55,9 +55,10 @@ E. Eisenberg and E.Y. Levanon, Trends in Genetics 29, (2013)
 
 ## Similar tools
 
-If you know of similar tools that would be helpful references for uses, please contribute an attribution to them here.
+If you know of similar tools that would be helpful references for users, please contribute an attribution to them here.
 
 1. [goatools](https://github.com/tanghaibao/goatools)
+2. [goenrich](https://github.com/jdrudolph/goenrich)
 
 ## GO evidence codes
 
