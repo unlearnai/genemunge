@@ -177,7 +177,8 @@ class RemoveUnwantedVariation(object):
 
     Attributes:
         alpha (numpy array): the coupling of genes to uninteresting factors.
-        J (numpy array): (alpha . alpha^T)^-1
+        alpha_c (numpy array): alpha restricted to housekeeping genes
+        hk_genes (List[str]): a list of housekeeping gene names used in fitting.
 
     """
     def __init__(self, alpha=None):
@@ -213,15 +214,15 @@ class RemoveUnwantedVariation(object):
                 to the cumulative fractional variance up to the cutoff.
 
         Returns:
-            U, L, V where M = U L V^{T}
+            U, L, Vt where M = U L V^{T}
 
         """
-        U, L, V = numpy.linalg.svd(matrix, full_matrices=False)
+        U, L, Vt = numpy.linalg.svd(matrix, full_matrices=False)
         # trim eigenvalues close to 0, exploit the fact that L is ordered
         L = L[:(~numpy.isclose(L, 0)).sum()]
         cumul_variance_fracs = numpy.cumsum(L**2) / numpy.sum(L**2)
         L_cutoff = min(len(L), 1+numpy.searchsorted(cumul_variance_fracs, variance_cutoff))
-        return U[:, :L_cutoff], L[:L_cutoff], V[:L_cutoff, :]
+        return U[:, :L_cutoff], L[:L_cutoff], Vt[:L_cutoff, :]
 
     def fit(self, data, hk_genes, nu=0, variance_cutoff=0.9):
         """
@@ -240,11 +241,12 @@ class RemoveUnwantedVariation(object):
         sure that B_c = 0. That is, the housekeeping genes are not coupled to
         any biologically interesting factors. Therefore, we have Y_c = W A_c + noise.
         Let Y_c = U L V^{T} be the singular value decomposition of Y_c. Then,
-        we can estiamte W = U L.
+        we can estiamte W = U L.  Additionally, A_c = V^{T}.
 
         Now, if we fix W and assume that X B = 0 for all genes then we can
-        estimate A = (W W^{T})^{-1} W^{T} Y. This matrix stores K patterns of
-        variation that are usually not biologically interesting.
+        estimate A = W^+ Y = (W W^{T})^{-1} W^{T} Y.
+        This matrix stores K patterns of variation that are
+        usually not biologically interesting.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
@@ -252,7 +254,7 @@ class RemoveUnwantedVariation(object):
             hk_genes (List[str]): list of housekeeping genes
             nu (float): A coefficient for an L2 penalty when fitting A.
             variance_cutoff (float): the cumulative variance cutoff on SVD
-                eigenvalues of Y_c.
+                eigenvalues of Y_c (the variance fraction of the factors).
 
         Returns:
             None
@@ -262,14 +264,15 @@ class RemoveUnwantedVariation(object):
         hk_genes_in_data = [gene for gene in hk_genes if gene in data.columns]
         # solve for W ~ (num_samples, num_singular_values)
         housekeeping = data[hk_genes_in_data]
-        U, L, V = self._cutoff_svd(housekeeping, variance_cutoff)
+        U, L, Vt = self._cutoff_svd(housekeeping, variance_cutoff)
         W = U * L
+        # save alpha on the housekeeping genes
+        self.hk_genes = hk_genes_in_data
+        self.alpha_c = Vt
         # solve for alpha ~ (num_singular_values, num_genes)
         penalty_term = nu*numpy.eye(W.shape[1])
         self.alpha = numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W) + penalty_term),
                                numpy.dot(W.T, data))
-        # store inverse of inner products J ~ (num_singular_values, num_singular_values)
-        self.J = numpy.linalg.inv(numpy.dot(self.alpha, self.alpha.T))
 
     def transform(self, data):
         """
@@ -280,11 +283,12 @@ class RemoveUnwantedVariation(object):
             uninteresting factors
 
         We can estimate the activity of these factors from a new dataset \tilde{Y}
-        by computing \tilde{W} = \tilde{Y} A^{T} (A A^{T})^{-1} using the right
-        pseudoinverse of A.
+        by using the housekeeping genes on this new dataset and computing
+        \tilde{W} = \tilde{Y}_c A_c^{+}.  Since A_c = V^{T} from the SVD,
+        the right pseudoinverse A_c^{+} = A_c^{T}.
 
-        Finally, we can subtract \tilde{W} A from the data by computing
-        \tilde{Y} - \tilde{Y} A^{T} (A A^{T})^{-1} A.
+        Finally, we can subtract \tilde{W} A from the data,
+        \tilde{Y} - \tilde{W} A.
 
         Essentially, we are removing the components of the data that project
         onto the pre-defined axes of uninteresting variation.
@@ -298,7 +302,9 @@ class RemoveUnwantedVariation(object):
             batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
 
         """
-        delta = numpy.dot(numpy.dot(numpy.dot(data, self.alpha.T), self.J), self.alpha)
+        # compute W for the data to be transformed
+        W = numpy.dot(data[self.hk_genes], self.alpha_c.T)
+        delta = numpy.dot(W, self.alpha)
         return data - delta
 
     def fit_transform(self, data, hk_genes, nu=0, variance_cutoff=0.9):
