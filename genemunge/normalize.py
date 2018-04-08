@@ -179,6 +179,7 @@ class RemoveUnwantedVariation(object):
         alpha (numpy array): the coupling of genes to uninteresting factors.
         alpha_c (numpy array): alpha restricted to housekeeping genes
         hk_genes (List[str]): a list of housekeeping gene names used in fitting.
+        means (Series): the means of each gene from the training data.
 
     """
     def __init__(self, alpha=None):
@@ -260,10 +261,14 @@ class RemoveUnwantedVariation(object):
             None
 
         """
+        # center the data along genes
+        self.means = data.mean(axis=0)
+        data_center = data - self.means
+
         # restrict to available housekeeping genes
         hk_genes_in_data = [gene for gene in hk_genes if gene in data.columns]
         # solve for W ~ (num_samples, num_singular_values)
-        housekeeping = data[hk_genes_in_data]
+        housekeeping = data_center[hk_genes_in_data]
         U, L, Vt = self._cutoff_svd(housekeeping, variance_cutoff)
         W = U * L
         # save alpha on the housekeeping genes
@@ -272,7 +277,7 @@ class RemoveUnwantedVariation(object):
         # solve for alpha ~ (num_singular_values, num_genes)
         penalty_term = nu*numpy.eye(W.shape[1])
         self.alpha = numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W) + penalty_term),
-                               numpy.dot(W.T, data))
+                               numpy.dot(W.T, data_center))
 
     def transform(self, data):
         """
@@ -303,7 +308,7 @@ class RemoveUnwantedVariation(object):
 
         """
         # compute W for the data to be transformed
-        W = numpy.dot(data[self.hk_genes], self.alpha_c.T)
+        W = numpy.dot((data - self.means)[self.hk_genes], self.alpha_c.T)
         delta = numpy.dot(W, self.alpha)
         return data - delta
 
