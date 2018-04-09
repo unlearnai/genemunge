@@ -1,8 +1,48 @@
 import os
 import pandas
+import numpy
 
 from ... import normalize
 from ... import convert
+
+
+def hellinger(aves, stds):
+    """
+    Computes pairwise Hellinger distances between Gaussian distributions
+    from lists of the means and standard deviations.
+
+    Args:
+        aves (numpy array): list of means (length n)
+        stds (numpy array): list of standard deviations (length n)
+
+    Returns:
+        pairise hellinger distance (numpy array ~ (n, n))
+
+    """
+    epsilon = 1e-6
+    variances = (epsilon + stds) ** 2
+    std_probs = numpy.multiply.outer(epsilon + stds, epsilon + stds)
+    var_sums = numpy.add.outer(variances, variances)
+    mean_diffs = numpy.subtract.outer(aves, aves)
+    return 1 - numpy.exp(-mean_diffs ** 2 / (4 * var_sums)) * \
+                numpy.sqrt(2 * std_probs / var_sums)
+
+
+def max_hellinger(aves, stds):
+    """
+    Computes maximum Hellinger distance from pairwise comparisions of Gaussian
+    distributions from lists of the means and standard deviations.
+
+    Args:
+        aves (numpy array): list of means (length n)
+        stds (numpy array): list of standard deviations (length n)
+
+    Returns:
+        maximum pairise hellinger distance (float)
+
+    """
+    return numpy.max(hellinger(aves, stds))
+
 
 def create_tissue_stats():
     """
@@ -62,6 +102,15 @@ def create_tissue_stats():
                 fraction_zero, pandas.DataFrame(
                         (tpm == 0).mean().astype(float), columns=[t])], axis=1)
 
+    # compute the maximum pairwise hellinger distance for each gene
+    genes = list(mean.index)
+    hellinger = []
+    for gene in genes:
+        aves = numpy.ravel(mean.loc[gene].as_matrix())
+        stds = numpy.ravel(std.loc[gene].as_matrix())
+        hellinger += [max_hellinger(aves, stds)]
+    hellinger = pandas.DataFrame(hellinger, index=genes).rename(columns={0: 'hellinger'})
+
     with pandas.HDFStore(os.path.join(filepath, 'tissue_stats.h5'), 'w') as store:
         store.put('mean', mean)
         store.put('median', median)
@@ -69,3 +118,4 @@ def create_tissue_stats():
         store.put('lower_quartile', lower_quartile)
         store.put('upper_quartile', upper_quartile)
         store.put('fraction_zero', fraction_zero)
+        store.put('hellinger', hellinger)
