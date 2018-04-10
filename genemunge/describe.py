@@ -30,7 +30,8 @@ class Describer(object):
 
     """
 
-    __stats__ = ['mean', 'median', 'std', 'lower_quartile', 'upper_quartile', 'fraction_zero']
+    __stats__ = ['mean', 'median', 'std', 'lower_quartile', 'upper_quartile',
+                 'fraction_zero', 'hellinger']
 
     def __init__(self, identifier='symbol', load_tissue_data=True):
         """
