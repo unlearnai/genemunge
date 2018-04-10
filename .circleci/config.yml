@@ -33,6 +33,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install .
+            pip install --upgrade --no-deps --force-reinstall .
 
       - save_cache:
           paths:
