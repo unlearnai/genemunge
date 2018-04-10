@@ -200,7 +200,7 @@ class RemoveUnwantedVariation(object):
         applied out-of-sample.
 
         Args:
-            center (bool): whether to center the gene means in the fit.
+            center (optional; bool): whether to center the gene means in the fit.
             hk_genes (optional; List[str]): list of housekeeping genes
             means (optional; numpy array ~ (num_genes,))
             U (optional; numpy array ~ (num_training_samples, num_factors))
