@@ -102,7 +102,7 @@ def create_tissue_stats():
                 fraction_zero, pandas.DataFrame(
                         (tpm == 0).mean().astype(float), columns=[t])], axis=1)
 
-    # compute the maximum pairwise hellinger distance for each gene
+    # compute the maximum pairwise hellinger distance across tissues for each gene
     genes = list(mean.index)
     hellinger = []
     for gene in genes:
