@@ -186,7 +186,7 @@ class RemoveUnwantedVariation(object):
             right eigenvectors from SVD of housekeeping genes in training set
 
     """
-    def __init__(self, hk_genes=None, means=None, U=None, L=None, Vt=None):
+    def __init__(self, center=True, hk_genes=None, means=None, U=None, L=None, Vt=None):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm
         defined in:
@@ -200,6 +200,7 @@ class RemoveUnwantedVariation(object):
         applied out-of-sample.
 
         Args:
+            center (bool): whether to center the gene means in the fit.
             hk_genes (optional; List[str]): list of housekeeping genes
             means (optional; numpy array ~ (num_genes,))
             U (optional; numpy array ~ (num_training_samples, num_factors))
@@ -210,6 +211,7 @@ class RemoveUnwantedVariation(object):
             RemoveUnwantedVariation
 
         """
+        self.center = center
         self.hk_genes =None
         self.means = None
         self.U = None
@@ -293,7 +295,10 @@ class RemoveUnwantedVariation(object):
         # restrict to available housekeeping genes
         self.hk_genes = [gene for gene in hk_genes if gene in data.columns]
         # center the data along genes
-        housekeeping = data[self.hk_genes] - self.means[self.hk_genes]
+        if self.center:
+            housekeeping = data[self.hk_genes] - self.means[self.hk_genes]
+        else:
+            housekeeping = data[self.hk_genes]
         self.U, self.L, self.Vt = self._cutoff_svd(housekeeping, variance_cutoff)
 
     def _delta(self, W, data_centered, penalty):
@@ -342,8 +347,11 @@ class RemoveUnwantedVariation(object):
 
         """
         assert self._is_fit(), "RUV has not been fit!"
-        data_centered = data - self.means
-        W = numpy.dot(data_centered[self.hk_genes], self.Vt.T)
+        if self.center:
+            data_trans = data - self.means
+        else:
+            data_trans = data
+        W = numpy.dot(data_trans[self.hk_genes], self.Vt.T)
         return data - self._delta(W, data_centered, penalty)
 
     def fit_transform(self, data, hk_genes, penalty=0, variance_cutoff=0.9):
