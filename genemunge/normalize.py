@@ -352,7 +352,7 @@ class RemoveUnwantedVariation(object):
         else:
             data_trans = data
         W = numpy.dot(data_trans[self.hk_genes], self.Vt.T)
-        return data - self._delta(W, data_centered, penalty)
+        return data - self._delta(W, data_trans, penalty)
 
     def fit_transform(self, data, hk_genes, penalty=0, variance_cutoff=0.9):
         """
