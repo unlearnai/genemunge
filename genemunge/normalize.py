@@ -176,13 +176,17 @@ class RemoveUnwantedVariation(object):
     The RUV-2 algorithm.
 
     Attributes:
-        alpha (numpy array): the coupling of genes to uninteresting factors.
-        alpha_c (numpy array): alpha restricted to housekeeping genes
         hk_genes (List[str]): a list of housekeeping gene names used in fitting.
-        means (Series): the means of each gene from the training data.
+        means (pandas.Series): the means of each gene from the training data.
+        U (optional; numpy array ~ (num_training_samples, num_factors)):
+            left eigenvectors from SVD of housekeeping genes in training set
+        L (optional; numpy array ~ (num_factors,))
+            eigenvalues from SVD of housekeeping genes in training set
+        Vt (optional; numpy_array ~ (num_factors, num_hk_genes)
+            right eigenvectors from SVD of housekeeping genes in training set
 
     """
-    def __init__(self, alpha=None):
+    def __init__(self, hk_genes=None, means=None, U=None, L=None, Vt=None):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm
         defined in:
@@ -196,13 +200,38 @@ class RemoveUnwantedVariation(object):
         applied out-of-sample.
 
         Args:
-            alpha (optional; numpy array ~ (num_singular_values, num_genes))
+            hk_genes (optional; List[str]): list of housekeeping genes
+            means (optional; numpy array ~ (num_genes,))
+            U (optional; numpy array ~ (num_training_samples, num_factors))
+            L (optional; numpy array ~ (num_factors,))
+            Vt (optional; numpy_array ~ (num_factors, num_hk_genes))
 
         Returns:
             RemoveUnwantedVariation
 
         """
-        self.alpha = alpha
+        self.hk_genes =None
+        self.means = None
+        self.U = None
+        self.L = None
+        self.Vt = None
+
+    def _is_fit(self):
+        """
+        Check if the batch effect transformation has been fit.
+
+        Args:
+            None
+
+        Returns:
+            bool
+
+        """
+        return (self.hk_genes is not None) or \
+               (self.means is not None) or \
+               (self.U is not None) or \
+               (self.L is not None) or \
+               (self.Vt is not None)
 
     def _cutoff_svd(self, matrix, variance_cutoff=1):
         """
@@ -225,7 +254,7 @@ class RemoveUnwantedVariation(object):
         L_cutoff = min(len(L), 1+numpy.searchsorted(cumul_variance_fracs, variance_cutoff))
         return U[:, :L_cutoff], L[:L_cutoff], Vt[:L_cutoff, :]
 
-    def fit(self, data, hk_genes, nu=0, variance_cutoff=0.9):
+    def fit(self, data, hk_genes, variance_cutoff=0.9):
         """
         Perform a singular value decomposition of the housekeeping genes to
         fit the transform.
@@ -253,7 +282,6 @@ class RemoveUnwantedVariation(object):
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
                 expression data
             hk_genes (List[str]): list of housekeeping genes
-            nu (float): A coefficient for an L2 penalty when fitting A.
             variance_cutoff (float): the cumulative variance cutoff on SVD
                 eigenvalues of Y_c (the variance fraction of the factors).
 
@@ -261,25 +289,31 @@ class RemoveUnwantedVariation(object):
             None
 
         """
-        # center the data along genes
         self.means = data.mean(axis=0)
-        data_center = data - self.means
-
         # restrict to available housekeeping genes
-        hk_genes_in_data = [gene for gene in hk_genes if gene in data.columns]
-        # solve for W ~ (num_samples, num_singular_values)
-        housekeeping = data_center[hk_genes_in_data]
-        U, L, Vt = self._cutoff_svd(housekeeping, variance_cutoff)
-        W = U * L
-        # save alpha on the housekeeping genes
-        self.hk_genes = hk_genes_in_data
-        self.alpha_c = Vt
-        # solve for alpha ~ (num_singular_values, num_genes)
-        penalty_term = nu*numpy.eye(W.shape[1])
-        self.alpha = numpy.dot(numpy.linalg.inv(numpy.dot(W.T, W) + penalty_term),
-                               numpy.dot(W.T, data_center))
+        self.hk_genes = [gene for gene in hk_genes if gene in data.columns]
+        # center the data along genes
+        housekeeping = data[self.hk_genes] - self.means[self.hk_genes]
+        self.U, self.L, self.Vt = self._cutoff_svd(housekeeping, variance_cutoff)
 
-    def transform(self, data):
+    def _delta(self, W, data_centered, penalty):
+        """
+        Compute the corrections for RUV2.
+
+        Args:
+            W (numpy array ~ (num_samples, num_factors))
+            data_centered (pandas.DataFrame ~ (num_samples, num_genes))
+            penalty (float)
+
+        Returns:
+            delta (numpy array ~ (num_samples, num_genes))
+
+        """
+        penalty_term = penalty * numpy.eye(W.shape[1])
+        J = numpy.linalg.inv(penalty_term + numpy.dot(W.T, W))
+        return numpy.dot(W, numpy.dot(J, numpy.dot(W.T, data_centered)))
+
+    def transform(self, data, penalty=0):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
 
@@ -301,18 +335,18 @@ class RemoveUnwantedVariation(object):
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
                 expression data
-            hk_genes (List[str]): list of housekeeping genes
+            penalty (float): regularization on the regression step
 
         Returns:
             batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
 
         """
-        # compute W for the data to be transformed
-        W = numpy.dot((data - self.means)[self.hk_genes], self.alpha_c.T)
-        delta = numpy.dot(W, self.alpha)
-        return data - delta
+        assert self._is_fit(), "RUV has not been fit!"
+        data_centered = data - self.means
+        W = numpy.dot(data_centered[self.hk_genes], self.Vt.T)
+        return data - self._delta(W, data_centered, penalty)
 
-    def fit_transform(self, data, hk_genes, nu=0, variance_cutoff=0.9):
+    def fit_transform(self, data, hk_genes, penalty=0, variance_cutoff=0.9):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
 
@@ -320,7 +354,7 @@ class RemoveUnwantedVariation(object):
             data (pandas.DataFrame ~ (num_samples, num_genes)): clr transformed
                 expression data
             hk_genes (List[str]): list of housekeeping genes
-            nu (float): A coefficient for an L2 penalty when fitting A.
+            penalty (float): regularization on the regression step
             variance_cutoff (float): the cumulative variance cutoff on SVD
                 eigenvalues of Y_c.
 
@@ -328,8 +362,8 @@ class RemoveUnwantedVariation(object):
             batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
 
         """
-        self.fit(data, hk_genes, nu, variance_cutoff)
-        return self.transform(data)
+        self.fit(data, hk_genes, variance_cutoff)
+        return self.transform(data, penalty)
 
     def save(self, filename, overwrite_existing=False):
         """
