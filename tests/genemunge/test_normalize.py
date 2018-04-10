@@ -119,10 +119,11 @@ def test_remove_unwanted_variation_noX():
     alpha = np.random.randn(num_hidden_factors, num_genes)
 
     Y = pd.DataFrame(np.dot(W, alpha))
-    ruv = normalize.RemoveUnwantedVariation()
+    ruv = normalize.RemoveUnwantedVariation(center=True)
     Y_tilde = ruv.fit_transform(Y, np.arange(num_genes), variance_cutoff=1)
 
-    assert np.allclose(Y_tilde, 0)
+    assert np.allclose(Y.mean(axis=0), Y_tilde.mean(axis=0))
+    assert np.allclose(Y_tilde - Y_tilde.mean(axis=0), 0)
 
 
 def test_remove_unwanted_variation():
@@ -144,11 +145,11 @@ def test_remove_unwanted_variation():
     Yr = np.dot(X, beta)[:, num_hk_genes:] + np.dot(W, alpha)[:, num_hk_genes:]
 
     Y = pd.DataFrame(np.hstack([Yc, Yr]))
-    ruv = normalize.RemoveUnwantedVariation()
+    ruv = normalize.RemoveUnwantedVariation(center=False)
     Y_tilde = ruv.fit_transform(Y, np.arange(num_hk_genes), variance_cutoff=1)
 
     # check the W factor count estimate
-    assert ruv.alpha.shape[0] == num_W_factors
+    assert ruv.L.shape[0] == num_W_factors
 
 
 if __name__ == "__main__":
