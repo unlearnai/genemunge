@@ -1,10 +1,11 @@
-import os, json
+import os, json, pandas
 from itertools import chain
 
 
 FILEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 GONAME = os.path.join(FILEPATH, 'go.json')
 ATTRIBUTENAME = os.path.join(FILEPATH, 'gene_attributes.json')
+GTEXPATH = os.path.join(FILEPATH, 'gtex')
 
 
 class Searcher(object):
@@ -168,6 +169,29 @@ class Searcher(object):
 
         """
         return sorted(self.attributes["housekeeping_genes"])
+
+    def get_control_genes(self, cutoff):
+        """
+        Get a list of genes that are designated to be "housekeeping genes"
+        and that have similar expression across tissues in GTEx.
+
+        Each gene has been assigned a score (the 'Hellinger' distance) that
+        describes the similarity in its expression across tissues. The score
+        ranges between 0 (all tissues have the same expression) to 1 (at least
+        one pair of tissues are easily distinguished from the expression of the
+        gene).
+
+        Args:
+            cutoff (float \in [0,1]):
+
+        Returns:
+            genes (List[str]): list of genes by ensembl_gene_id
+
+        """
+        tissue_status_filename = os.path.join(GTEXPATH, 'tissue_stats.h5')
+        hellinger = pandas.read_hdf(tissue_status_filename, 'hellinger')
+        hk_genes = hellinger.loc[self.get_housekeeping_genes()]
+        return list(hk_genes[hk_genes['hellinger'] < cutoff].index)
 
     def get_transcription_factors(self):
         """

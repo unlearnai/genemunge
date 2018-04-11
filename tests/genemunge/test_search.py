@@ -50,6 +50,15 @@ def test_searcher_get_housekeeping_genes():
     assert "ENSG00000123268" in hk_genes
 
 
+def test_searcher_get_control_genes():
+    """Try to get the list of control genes.  Check a known control gene."""
+    searcher = search.Searcher()
+
+    controls = searcher.get_control_genes(0.6)
+    # check AP3S2 in control genes
+    assert "ENSG00000157823" in controls
+
+
 def test_searcher_get_transcription_factors():
     """Try to get the list of transcription factors.  Check a known TF."""
     searcher = search.Searcher()
