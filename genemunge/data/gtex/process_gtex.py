@@ -112,10 +112,10 @@ def create_tissue_stats():
     hellinger = pandas.DataFrame(hellinger, index=genes).rename(columns={0: 'hellinger'})
 
     with pandas.HDFStore(os.path.join(filepath, 'tissue_stats.h5'), 'w') as store:
-        store.put('mean', mean)
-        store.put('median', median)
-        store.put('std', std)
-        store.put('lower_quartile', lower_quartile)
-        store.put('upper_quartile', upper_quartile)
-        store.put('fraction_zero', fraction_zero)
-        store.put('hellinger', hellinger)
+        store.put('mean', mean.astype(numpy.float32))
+        store.put('median', median.astype(numpy.float32))
+        store.put('std', std.astype(numpy.float32))
+        store.put('lower_quartile', lower_quartile.astype(numpy.float32))
+        store.put('upper_quartile', upper_quartile.astype(numpy.float32))
+        store.put('fraction_zero', fraction_zero.astype(numpy.float32))
+        store.put('hellinger', hellinger.astype(numpy.float32))

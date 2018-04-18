@@ -43,7 +43,7 @@ class PostInstallCommand(install):
 
 
 def readme():
-    with open('README.md') as f:
+    with open('README.rst') as f:
         return f.read()
 
 
@@ -51,6 +51,19 @@ setup(name='genemunge',
       version='0.0',
       description='Tools for munging genomics data',
       long_description=readme(),
+      url='http://github.com/unlearnai/genemunge',
+      author='Unlearn.AI, Inc.',
+      author_email='drckf@unlearn.ai',
+      license='MIT',
+      classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+      ],
+      keywords='bioinformatics genomics',
       packages=find_packages(),
       package_data={'genemunge': ['data/gene_attributes.json',
                                   'data/go.json',
@@ -70,6 +83,7 @@ setup(name='genemunge',
       tests_require=[
           'pytest'
       ],
+      python_requires='>=3.5',
       zip_safe=False,
       cmdclass={
               'develop': PostDevelopCommand,
