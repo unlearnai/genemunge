@@ -27,11 +27,11 @@ GTEx. - `HGNC <https://www.genenames.org/>`__ gene symbols. - A list of
 `transcription factors <http://www.tfcheckpoint.org/>`__. - A list of
 `housekeeping genes <https://www.tau.ac.il/~elieis/HKG/>`__.
 
-Installing this package through ``pip`` (``pip install .`` if installing
-from GitHub) will use the static data that accompanies this repository.
+Installing this package through ``pip`` (``pip install genemunge`` from PyPI,
+``pip install .`` from GitHub) will use the static data that accompanies this repository.
 
 If you wish to use the latest data from the above sources, you may
-install in "develop" mode with ``pip -e install .``. Notably, this will
+install in "develop" mode from GitHub with ``pip -e install .``. Notably, this will
 download and process the recount2 GTEx data, requiring ``R`` and the
 ``recount`` package from ``bioconductor``:
 
