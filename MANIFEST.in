@@ -1,4 +1,4 @@
 include LICENSE.txt
-include CONTRIBUTING.md
-include README.md
+include CONTRIBUTING.rst
+include README.rst
 recursive-include data *
