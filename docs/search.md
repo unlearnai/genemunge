@@ -14,6 +14,18 @@ def __init__(self)
 Create a object to search through the Gene Ontology.<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;None<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;Searcher
 
 
+### get\_control\_genes
+```py
+
+def get_control_genes(self, cutoff)
+
+```
+
+
+
+Get a list of genes that are designated to be "housekeeping genes"<br />and that have similar expression across tissues in GTEx.<br /><br />Each gene has been assigned a score (the 'Hellinger' distance) that<br />describes the similarity in its expression across tissues. The score<br />ranges between 0 (all tissues have the same expression) to 1 (at least<br />one pair of tissues are easily distinguished from the expression of the<br />gene).<br /><br />Args:<br />&nbsp;&nbsp;&nbsp;&nbsp;cutoff (float \in [0,1]):<br /><br />Returns:<br />&nbsp;&nbsp;&nbsp;&nbsp;genes (List[str]): list of genes by ensembl_gene_id
+
+
 ### get\_genes
 ```py
 
