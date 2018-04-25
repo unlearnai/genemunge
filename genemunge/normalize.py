@@ -48,7 +48,8 @@ def impute(data, scale=0.5):
 
     """
     v = scale * data[data > 0].min(axis=1)
-    return data.fillna(0).T.replace(to_replace=0, value=v).T
+    data_fill = data.fillna(0)
+    return data_fill + (data_fill == 0).multiply(v, axis=0)
 
 
 class Normalizer(object):
