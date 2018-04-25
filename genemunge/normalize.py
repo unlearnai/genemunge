@@ -230,10 +230,10 @@ class RemoveUnwantedVariation(object):
             bool
 
         """
-        return (self.hk_genes is not None) or \
-               (self.means is not None) or \
-               (self.U is not None) or \
-               (self.L is not None) or \
+        return (self.hk_genes is not None) and \
+               (self.means is not None) and \
+               (self.U is not None) and \
+               (self.L is not None) and \
                (self.Vt is not None)
 
     def _cutoff_svd(self, matrix, variance_cutoff=1, num_components=None):
