@@ -152,5 +152,33 @@ def test_remove_unwanted_variation():
     assert ruv.L.shape[0] == num_W_factors
 
 
+def test_remove_unwanted_variation_component_cut():
+    """Test that the RUV2 implementation correctly trims the number of
+    irrelevant factors on a constructed example."""
+    num_samples = 200
+    num_genes = 1000
+    num_hk_genes = 100
+    num_X_factors = 20
+    num_W_factors = 10
+    num_components = 3
+
+    X = np.random.randn(num_samples, num_X_factors)
+    beta = np.random.randn(num_X_factors, num_genes)
+
+    W = np.random.randn(num_samples, num_W_factors)
+    alpha = np.random.randn(num_W_factors, num_genes)
+
+    Yc = np.dot(W, alpha)[:, :num_hk_genes]
+    Yr = np.dot(X, beta)[:, num_hk_genes:] + np.dot(W, alpha)[:, num_hk_genes:]
+
+    Y = pd.DataFrame(np.hstack([Yc, Yr]))
+    ruv = normalize.RemoveUnwantedVariation(center=False)
+    Y_tilde = ruv.fit_transform(Y, np.arange(num_hk_genes), variance_cutoff=1,
+                                num_components=num_components)
+
+    # check the W factor count estimate
+    assert ruv.L.shape[0] == num_components
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
