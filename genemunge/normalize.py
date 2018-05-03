@@ -48,7 +48,8 @@ def impute(data, scale=0.5):
 
     """
     v = scale * data[data > 0].min(axis=1)
-    return data.fillna(0).T.replace(to_replace=0, value=v).T
+    data_fill = data.fillna(0)
+    return data_fill + (data_fill == 0).multiply(v, axis=0)
 
 
 class Normalizer(object):
@@ -212,7 +213,7 @@ class RemoveUnwantedVariation(object):
 
         """
         self.center = center
-        self.hk_genes =None
+        self.hk_genes = None
         self.means = None
         self.U = None
         self.L = None
@@ -229,13 +230,13 @@ class RemoveUnwantedVariation(object):
             bool
 
         """
-        return (self.hk_genes is not None) or \
-               (self.means is not None) or \
-               (self.U is not None) or \
-               (self.L is not None) or \
+        return (self.hk_genes is not None) and \
+               (self.means is not None) and \
+               (self.U is not None) and \
+               (self.L is not None) and \
                (self.Vt is not None)
 
-    def _cutoff_svd(self, matrix, variance_cutoff=1):
+    def _cutoff_svd(self, matrix, variance_cutoff=1, num_components=None):
         """
         Compute the singular value decomposition of a matrix and get rid
         of any singular vectors below a cumulative variance threshold.
@@ -244,6 +245,8 @@ class RemoveUnwantedVariation(object):
             matrix (numpy array): the data
             variance_cutoff (float): retains only elements of L that contribute
                 to the cumulative fractional variance up to the cutoff.
+            num_components (int): the maximum number of components of L to use.
+                If None, no additional constraint is applied.
 
         Returns:
             U, L, Vt where M = U L V^{T}
@@ -253,10 +256,12 @@ class RemoveUnwantedVariation(object):
         # trim eigenvalues close to 0, exploit the fact that L is ordered
         L = L[:(~numpy.isclose(L, 0)).sum()]
         cumul_variance_fracs = numpy.cumsum(L**2) / numpy.sum(L**2)
-        L_cutoff = min(len(L), 1+numpy.searchsorted(cumul_variance_fracs, variance_cutoff))
+        max_components = len(L) if num_components is None else num_components
+        L_cutoff = min(max_components,
+                       1+numpy.searchsorted(cumul_variance_fracs, variance_cutoff))
         return U[:, :L_cutoff], L[:L_cutoff], Vt[:L_cutoff, :]
 
-    def fit(self, data, hk_genes, variance_cutoff=0.9):
+    def fit(self, data, hk_genes, variance_cutoff=0.9, num_components=None):
         """
         Perform a singular value decomposition of the housekeeping genes to
         fit the transform.
@@ -286,6 +291,8 @@ class RemoveUnwantedVariation(object):
             hk_genes (List[str]): list of housekeeping genes
             variance_cutoff (float): the cumulative variance cutoff on SVD
                 eigenvalues of Y_c (the variance fraction of the factors).
+            num_components (int): the maximum number of components K to use.
+                If None, all components are used (up to the variance cutoff).
 
         Returns:
             None
@@ -299,7 +306,8 @@ class RemoveUnwantedVariation(object):
             housekeeping = data[self.hk_genes] - self.means[self.hk_genes]
         else:
             housekeeping = data[self.hk_genes]
-        self.U, self.L, self.Vt = self._cutoff_svd(housekeeping, variance_cutoff)
+        self.U, self.L, self.Vt = self._cutoff_svd(housekeeping, variance_cutoff,
+                                                   num_components)
 
     def _delta(self, W, data_centered, penalty):
         """
@@ -354,7 +362,8 @@ class RemoveUnwantedVariation(object):
         W = numpy.dot(data_trans[self.hk_genes], self.Vt.T)
         return data - self._delta(W, data_trans, penalty)
 
-    def fit_transform(self, data, hk_genes, penalty=0, variance_cutoff=0.9):
+    def fit_transform(self, data, hk_genes, penalty=0, variance_cutoff=0.9,
+                      num_components=None):
         """
         Perform the 2-step Remove Unwanted Variation (RUV-2) algorithm.
 
@@ -365,12 +374,14 @@ class RemoveUnwantedVariation(object):
             penalty (float): regularization on the regression step
             variance_cutoff (float): the cumulative variance cutoff on SVD
                 eigenvalues of Y_c.
+            num_components (int): the maximum number of components K to use.
+                If None, all components are used (up to the variance cutoff).
 
         Returns:
             batch corrected data (pandas.DataFrame ~ (num_samples, num_genes))
 
         """
-        self.fit(data, hk_genes, variance_cutoff)
+        self.fit(data, hk_genes, variance_cutoff, num_components)
         return self.transform(data, penalty)
 
     def save(self, filename, overwrite_existing=False):
