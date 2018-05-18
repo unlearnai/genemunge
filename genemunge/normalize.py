@@ -150,7 +150,7 @@ class Normalizer(object):
             imputer (optional; callable)
 
         Returns:
-            pandas.DataFrame
+            pandas.DataFrame ~ (num_samples, num_genes)
 
         """
         imputed = self.tpm_from_subset(imputer(data), gene_list)
@@ -166,10 +166,40 @@ class Normalizer(object):
             gene_list (optional; List[str]): a list of gene ids
 
         Returns:
-            pandas.DataFrame
+            pandas.DataFrame ~ (num_samples, num_genes)
 
         """
         return self.tpm_from_rpkm(numpy.exp(data), gene_list)
+
+    def alr_from_tpm(self, data, reference_genes, gene_list=None,
+                     imputer=do_nothing):
+        """
+        Compute the additive log ratio transform of data in TPM format.
+        This transform normalizes by the geometric mean of the reference genes,
+        and drops the reference genes from the data set.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+            reference_genes (List[str]): a list of gene ids to use as the
+                references in the ALR transform
+            gene_list (optional; List[str]): a list of gene ids
+            imputer (optional; callable)
+
+        Returns:
+            pandas.DataFrame ~ (num_samples, num_genes - num_reference_genes)
+
+        """
+        common_references = [gene for gene in reference_genes if gene in self.gene_lengths.index]
+        if gene_list is not None:
+            genes_to_keep = [gene for gene in gene_list if
+                             (gene not in common_references) and (gene in self.gene_lengths.index)]
+        else:
+            genes_to_keep = [gene for gene in data.columns if
+                             (gene not in common_references) and (gene in self.gene_lengths.index)]
+        imputed = self.tpm_from_subset(imputer(data), genes_to_keep + common_references)
+        log_transformed = numpy.log(imputed)
+        refs = log_transformed[common_references].mean(axis=1)
+        return log_transformed[genes_to_keep].subtract(refs, axis=0)
 
 
 class RemoveUnwantedVariation(object):

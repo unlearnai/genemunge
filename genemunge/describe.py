@@ -91,8 +91,9 @@ class Describer(object):
         gene_id = self.get_ensembl(identifier)
         if gene_id != gene_id:
             raise KeyError("Unknown identifier {}".format(identifier))
-        return pandas.concat(
-                {k: self.tissue_stats[k].loc[gene_id] for k in self.__stats__}, axis=1)
+        stats = [s for s in self.__stats__ if s != 'hellinger']
+        return pandas.concat({k: self.tissue_stats[k].loc[gene_id] for k in stats},
+                              axis=1)
 
     def plot_tissue_expression(self, identifier, sortby=None, show=True, filename=None):
         """

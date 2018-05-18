@@ -23,8 +23,7 @@ Install
 
 This library is accompanied by the following data sources:
 
-- The `Gene Ontology <http://geneontology.org/>`__. The current version used
-here is the 2018-03-27 release.
+- The `Gene Ontology <http://geneontology.org/>`__. The current version used here is the 2018-03-27 release.
 - `recount2 <https://jhubiostatistics.shinyapps.io/recount/>`__ data for GTEx.
 - `HGNC <https://www.genenames.org/>`__ gene symbols.
 - A list of `transcription factors <http://www.tfcheckpoint.org/>`__.
