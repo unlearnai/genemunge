@@ -64,7 +64,7 @@ def test_normalizer_tpm_from_rpkm(expression_data):
 
     rpkm = expression_data.rpkm
     tpm = expression_data.tpm
-    tpm_calc = norm.tpm_from_rpkm(rpkm)
+    tpm_calc = norm.tpm_from_rpkm(rpkm, gene_list=rpkm.columns)
     assert (tpm.columns == tpm_calc.columns).all()
     assert (tpm.index == tpm_calc.index).all()
     assert np.allclose(tpm.values, tpm_calc.values)
@@ -77,7 +77,8 @@ def test_normalizer_tpm_from_counts(expression_data):
 
     counts = expression_data.counts
     tpm = expression_data.tpm
-    tpm_calc = norm.tpm_from_counts(counts)
+    tpm_calc = norm.tpm_from_counts(counts, counts.columns)
+
     assert (tpm.columns == tpm_calc.columns).all()
     assert (tpm.index == tpm_calc.index).all()
     assert np.allclose(tpm.values, tpm_calc.values)
@@ -89,7 +90,7 @@ def test_normalizer_tpm_from_subset(expression_data):
     norm = normalize.Normalizer(identifier=identifier)
 
     tpm = expression_data.tpm
-    tpm_fullset_calc = norm.tpm_from_subset(tpm)
+    tpm_fullset_calc = norm.tpm_from_subset(tpm, tpm.columns)
     assert np.allclose(tpm.values, tpm_fullset_calc.values)
 
     tpm_subset_calc = norm.tpm_from_subset(tpm, tpm.columns[:100])
@@ -103,8 +104,8 @@ def test_clr_functions(expression_data):
     norm = normalize.Normalizer(identifier=identifier)
 
     tpm = normalize.impute(expression_data.tpm)
-    clr = norm.clr_from_tpm(tpm)
-    tpm_from_clr = norm.tpm_from_clr(clr)
+    clr = norm.clr_from_tpm(tpm, gene_list=tpm.columns)
+    tpm_from_clr = norm.tpm_from_clr(clr, gene_list=clr.columns)
 
     assert np.allclose(tpm, tpm_from_clr)
 
