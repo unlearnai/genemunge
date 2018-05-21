@@ -105,6 +105,24 @@ class Normalizer(object):
             subset = data
         return 10**6 * subset.divide(subset.sum(axis=1), axis='index')
 
+    def reindex(self, data):
+        """
+        Reindexes the dataframe so that it has the same genes as the gtex
+        dataset from recount.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+
+        Returns:
+            pandas.DataFrame ~ (num_samples, num_gtex_genes)
+
+        """
+        # upsample the data to all of the genes
+        upsampled = data.reindex(columns=self.gene_lengths.index)
+        # fill the NA with zero
+        upsampled.fillna(0, inplace=True)
+        return upsampled
+
     def tpm_from_counts(self, data, gene_list=None):
         """
         Transform data from counts to TPM.
