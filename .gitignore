@@ -111,6 +111,7 @@ ENV/
 *.tsv
 *.Rdata
 *.Rhistory
+*.png
 
 # don't exclude
 !genemunge/data/gene_attributes.json
