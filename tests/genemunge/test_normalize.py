@@ -126,6 +126,16 @@ def test_alr_functions(expression_data):
     assert (genes_to_keep == alr_genes)
 
 
+def test_gtex_reindex(expression_data):
+    """Test that all of the transforms reindex to GTEx properly."""
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+    tpm = norm.tpm_from_counts(expression_data.counts)
+    clr = norm.clr_from_tpm(tpm, imputer=normalize.impute)
+    assert (tpm.columns == clr.columns).all()
+    assert (tpm.columns == norm.gene_lengths.index).all()
+
+
 def test_remove_unwanted_variation_noX():
     """Test the RUV2 implementation for data with no X."""
     num_samples = 100
