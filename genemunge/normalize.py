@@ -230,14 +230,10 @@ class Normalizer(object):
             pandas.DataFrame ~ (num_samples, num_genes - num_reference_genes)
 
         """
-        common_references = [gene for gene in reference_genes if gene in self.gene_lengths.index]
-        if gene_list is not None:
-            genes_to_keep = [gene for gene in gene_list if
-                             (gene not in common_references) and (gene in self.gene_lengths.index)]
-        else:
-            genes_to_keep = [gene for gene in data.columns if
-                             (gene not in common_references) and (gene in self.gene_lengths.index)]
-        imputed = self.tpm_from_subset(imputer(data), genes_to_keep + common_references)
+        common_genes = self._get_common_genes(gene_list)
+        common_references = [gene for gene in reference_genes if gene in common_genes]
+        genes_to_keep = [gene for gene in common_genes if gene not in common_references]
+        imputed = self.tpm_from_subset(data, genes_to_keep + common_references)
         log_transformed = numpy.log(imputed)
         refs = log_transformed[common_references].mean(axis=1)
         return log_transformed[genes_to_keep].subtract(refs, axis=0)
