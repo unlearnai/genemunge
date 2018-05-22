@@ -110,6 +110,22 @@ def test_clr_functions(expression_data):
     assert np.allclose(tpm, tpm_from_clr)
 
 
+def test_alr_functions(expression_data):
+    """Test the TPM -> ALR  transform for some expression data."""
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+
+    tpm = normalize.impute(expression_data.tpm)
+
+    all_genes = list(tpm.columns)
+    reference_genes = all_genes[0]
+    genes_to_keep = all_genes[1:]
+    alr = norm.alr_from_tpm(tpm, reference_genes, gene_list=all_genes)
+    alr_genes = list(alr.columns)
+
+    assert (all_genes == alr_genes)
+
+
 def test_remove_unwanted_variation_noX():
     """Test the RUV2 implementation for data with no X."""
     num_samples = 100
