@@ -71,6 +71,12 @@ def create_tissue_stats():
     upper_quartile = pandas.DataFrame()
     fraction_zero = pandas.DataFrame()
 
+    mean_clr = pandas.DataFrame()
+    median_clr = pandas.DataFrame()
+    std_clr = pandas.DataFrame()
+    lower_quartile_clr = pandas.DataFrame()
+    upper_quartile_clr = pandas.DataFrame()
+
     tissues = samples.groupby('smts').groups
     norm = normalize.Normalizer('ensembl_gene_id')
     for t in tissues:
@@ -101,6 +107,20 @@ def create_tissue_stats():
         fraction_zero = pandas.concat([
                 fraction_zero, pandas.DataFrame(
                         (tpm == 0).mean().astype(float), columns=[t])], axis=1)
+        # Convert tpms to clr with 0.5*min imputation
+        clr = norm.clr_from_tpm(tissue_expression, imputer=normalize.impute)
+        mean_clr = pandas.concat(
+                [mean_clr, pandas.DataFrame(clr.mean(), columns=[t])], axis=1)
+        median_clr = pandas.concat(
+                [median_clr, pandas.DataFrame(clr.median(), columns=[t])], axis=1)
+        std_clr = pandas.concat(
+                [std_clr, pandas.DataFrame(clr.std(), columns=[t])], axis=1)
+        lower_quartile_clr = pandas.concat(
+                [lower_quartile_clr, pandas.DataFrame(
+                        clr.quantile(q=0.25, axis=0)).rename(columns={0.25: t})], axis=1)
+        upper_quartile_clr = pandas.concat(
+                [upper_quartile_clr, pandas.DataFrame(
+                        clr.quantile(q=0.75, axis=0)).rename(columns={0.75: t})], axis=1)
 
     # compute the maximum pairwise hellinger distance across tissues for each gene
     genes = list(mean.index)
@@ -111,6 +131,13 @@ def create_tissue_stats():
         hellinger += [max_hellinger(aves, stds)]
     hellinger = pandas.DataFrame(hellinger, index=genes).rename(columns={0: 'hellinger'})
 
+    hellinger_clr = []
+    for gene in genes:
+        aves = numpy.ravel(mean_clr.loc[gene].as_matrix())
+        stds = numpy.ravel(std_clr.loc[gene].as_matrix())
+        hellinger_clr += [max_hellinger(aves, stds)]
+    hellinger_clr = pandas.DataFrame(hellinger_clr, index=genes).rename(columns={0: 'hellinger_clr'})
+
     with pandas.HDFStore(os.path.join(filepath, 'tissue_stats.h5'), 'w') as store:
         store.put('mean', mean.astype(numpy.float32))
         store.put('median', median.astype(numpy.float32))
@@ -119,3 +146,9 @@ def create_tissue_stats():
         store.put('upper_quartile', upper_quartile.astype(numpy.float32))
         store.put('fraction_zero', fraction_zero.astype(numpy.float32))
         store.put('hellinger', hellinger.astype(numpy.float32))
+        store.put('mean_clr', mean_clr.astype(numpy.float32))
+        store.put('median_clr', median_clr.astype(numpy.float32))
+        store.put('std_clr', std_clr.astype(numpy.float32))
+        store.put('lower_quartile_clr', lower_quartile_clr.astype(numpy.float32))
+        store.put('upper_quartile_clr', upper_quartile_clr.astype(numpy.float32))
+        store.put('hellinger_clr', hellinger_clr.astype(numpy.float32))
