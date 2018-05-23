@@ -31,7 +31,8 @@ class Describer(object):
     """
 
     __stats__ = ['mean', 'median', 'std', 'lower_quartile', 'upper_quartile',
-                 'fraction_zero', 'hellinger']
+                 'fraction_zero', 'hellinger', 'mean_clr', 'median_clr', 'std_clr',
+                 'lower_quartile_clr', 'upper_quartile_clr', 'hellinger_clr']
 
     def __init__(self, identifier='symbol', load_tissue_data=True):
         """
@@ -93,7 +94,7 @@ class Describer(object):
             raise KeyError("Unknown identifier {}".format(identifier))
         stats = [s for s in self.__stats__ if s != 'hellinger']
         return pandas.concat({k: self.tissue_stats[k].loc[gene_id] for k in stats},
-                              axis=1)
+                              axis=1, sort=False)
 
     def plot_tissue_expression(self, identifier, sortby=None, show=True, filename=None):
         """
