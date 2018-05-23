@@ -111,6 +111,7 @@ ENV/
 *.tsv
 *.Rdata
 *.Rhistory
+*.png
 
 # don't exclude
 !genemunge/data/gene_attributes.json
@@ -118,3 +119,4 @@ ENV/
 !genemunge/data/hgnc_complete_set.txt
 !genemunge/data/gtex/gene_info.csv
 !genemunge/data/gtex/tissue_stats.h5
+!LICENSE.txt

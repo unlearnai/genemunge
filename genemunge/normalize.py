@@ -2,6 +2,7 @@ import os
 import pandas
 import numpy
 import pickle
+import warnings
 from pathlib import Path
 
 from . import convert
@@ -87,62 +88,113 @@ class Normalizer(object):
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.isnull()]
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
 
-    def tpm_from_rpkm(self, data, gene_list=None):
+    def _get_common_genes(self, gene_list):
+        """
+        Get a set of identifiers that occur in GTEx and, therefore,
+        have gene lengths.
+
+        Args:
+            gene_list (List[str])
+
+        Returns:
+            common_genes (List[str])
+
+        """
+        if gene_list is None:
+            # reindex to all of the gtex genes
+            return list(self.gene_lengths.index)
+        # select the genes in the gene_list that also occur in gtex
+        common_genes = [gene for gene in gene_list if gene in self.gene_lengths.index]
+        # warn the user about any genes that are not in gtex and are being dropped
+        missing_genes = list(set(gene_list) - set(common_genes))
+        if len(missing_genes) > 0:
+            warnings.warn("Could not find identifiers: {}".format(missing_genes))
+        return common_genes
+
+    def reindex(self, data, gene_list=None):
+        """
+        Reindexes the dataframe so that it has the same genes as the gtex
+        dataset from recount.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+
+        Returns:
+            pandas.DataFrame ~ (num_samples, num_common_genes)
+
+        """
+        common_genes = self._get_common_genes(gene_list)
+        common = data.reindex(columns=common_genes)
+        common.fillna(0, inplace=True)
+        return common
+
+    def tpm_from_rpkm(self, data, gene_list=None, imputer=do_nothing):
         """
         Transform data from RPKM to TPM.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
+        Takes an optional imputation method applied after reindexing.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
             gene_list (optional; List[str]): a list of gene ids
+            imputer (optional; callable)
 
         Returns:
             pandas.DataFrame
 
         """
-        if gene_list is not None:
-            subset = data[gene_list]
-        else:
-            subset = data
+        subset = imputer(self.reindex(data, gene_list))
         return 10**6 * subset.divide(subset.sum(axis=1), axis='index')
 
-    def tpm_from_counts(self, data, gene_list=None):
+    def tpm_from_counts(self, data, gene_list=None, imputer=do_nothing):
         """
         Transform data from counts to TPM.
-        Any genes not in the gene_lengths index is removed,
-            as the gene length is not known.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
+        Takes an optional imputation method applied after reindexing.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
             gene_list (optional; List[str]): a list of gene ids
+            imputer (optional; callable)
 
         Returns:
             pandas.DataFrame
 
         """
-        if gene_list is not None:
-            common_genes = [gene for gene in gene_list if gene in self.gene_lengths.index]
-        else:
-            common_genes = [gene for gene in data.columns if gene in self.gene_lengths.index]
-        subset = data[common_genes].divide(self.gene_lengths[common_genes], axis='columns')
-        return 10**6 * subset.divide(subset.sum(axis=1), axis='rows')
+        subset = imputer(self.reindex(data, gene_list))
+        normed = subset.divide(self.gene_lengths[subset.columns], axis='columns')
+        return 10**6 * normed.divide(normed.sum(axis=1), axis='rows')
 
-    def tpm_from_subset(self, data, gene_list=None):
+    def tpm_from_subset(self, data, gene_list=None, imputer=do_nothing):
         """
         Renormalize a subset of genes already in TPM.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
+        Takes an optional imputation method applied after reindexing.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
             gene_list (optional; List[str]): a list of gene ids
+            imputer (optional; callable)
 
         Returns:
             pandas.DataFrame
 
         """
-        return self.tpm_from_rpkm(data, gene_list)
+        return self.tpm_from_rpkm(data, gene_list, imputer)
 
     def clr_from_tpm(self, data, gene_list=None, imputer=do_nothing):
         """
         Compute the centered log ratio transform of data in TPM format.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
+        Takes an optional imputation method applied after reindexing.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
@@ -153,13 +205,16 @@ class Normalizer(object):
             pandas.DataFrame ~ (num_samples, num_genes)
 
         """
-        imputed = self.tpm_from_subset(imputer(data), gene_list)
+        imputed = self.tpm_from_subset(data, gene_list, imputer)
         log_transformed = numpy.log(imputed)
         return log_transformed.subtract(log_transformed.mean(axis=1), axis=0)
 
     def tpm_from_clr(self, data, gene_list=None):
         """
         Compute data in TPM format from centered log ratio transformed data.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
@@ -189,14 +244,10 @@ class Normalizer(object):
             pandas.DataFrame ~ (num_samples, num_genes - num_reference_genes)
 
         """
-        common_references = [gene for gene in reference_genes if gene in self.gene_lengths.index]
-        if gene_list is not None:
-            genes_to_keep = [gene for gene in gene_list if
-                             (gene not in common_references) and (gene in self.gene_lengths.index)]
-        else:
-            genes_to_keep = [gene for gene in data.columns if
-                             (gene not in common_references) and (gene in self.gene_lengths.index)]
-        imputed = self.tpm_from_subset(imputer(data), genes_to_keep + common_references)
+        common_genes = self._get_common_genes(gene_list)
+        common_references = [gene for gene in reference_genes if gene in common_genes]
+        genes_to_keep = [gene for gene in common_genes if gene not in common_references]
+        imputed = self.tpm_from_subset(data, genes_to_keep + common_references, imputer)
         log_transformed = numpy.log(imputed)
         refs = log_transformed[common_references].mean(axis=1)
         return log_transformed[genes_to_keep].subtract(refs, axis=0)
