@@ -6,6 +6,7 @@ import warnings
 from pathlib import Path
 
 from . import convert
+from . import describe
 
 def do_nothing(data):
     """
@@ -84,6 +85,7 @@ class Normalizer(object):
         if identifier is not 'ensembl_gene_id':
             c = convert.IDConverter('ensembl_gene_id', identifier)
             self.gene_lengths.index = c.convert_list(list(self.gene_lengths.index))
+        self.describer = describe.Describer(identifier)
         # drop any NaN and duplicate ids
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.isnull()]
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
