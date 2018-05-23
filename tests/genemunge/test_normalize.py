@@ -70,6 +70,19 @@ def test_normalizer_tpm_from_rpkm(expression_data):
     assert np.allclose(tpm.values, tpm_calc.values)
 
 
+def test_normalizer_tpm_from_rpkm_allgenes(expression_data):
+    """Test the RPKM -> TPM conversion for some expression data.
+    Include all genes."""
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+
+    rpkm = expression_data.rpkm
+    tpm = expression_data.tpm
+    tpm_calc = norm.tpm_from_rpkm(rpkm)
+    assert (tpm.index == tpm_calc.index).all()
+    assert np.allclose(tpm.values, tpm_calc[expression_data.tpm.columns].values)
+
+
 def test_normalizer_tpm_from_counts(expression_data):
     """Test the counts -> TPM conversion for some expression data."""
     identifier = 'symbol'
@@ -84,10 +97,28 @@ def test_normalizer_tpm_from_counts(expression_data):
     assert np.allclose(tpm.values, tpm_calc.values)
 
 
+def test_normalizer_tpm_from_counts_allgenes(expression_data):
+    """Test the counts -> TPM conversion for some expression data.
+    Include all genes."""
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+
+    counts = expression_data.counts
+    tpm = expression_data.tpm
+    tpm_calc = norm.tpm_from_counts(counts)
+
+    assert (tpm.index == tpm_calc.index).all()
+    assert np.allclose(tpm.values, tpm_calc[expression_data.tpm.columns].values)
+
+
 def test_normalizer_tpm_from_subset(expression_data):
     """Test the TPM -> TPM subset conversion for some expression data."""
     identifier = 'symbol'
     norm = normalize.Normalizer(identifier=identifier)
+
+    tpm = expression_data.tpm
+    tpm_allgenes_calc = norm.tpm_from_subset(tpm)
+    assert np.allclose(tpm.values, tpm_allgenes_calc[expression_data.tpm.columns].values)
 
     tpm = expression_data.tpm
     tpm_fullset_calc = norm.tpm_from_subset(tpm, tpm.columns)
@@ -121,6 +152,22 @@ def test_alr_functions(expression_data):
     reference_genes = all_genes[:1]
     genes_to_keep = all_genes[1:]
     alr = norm.alr_from_tpm(tpm, reference_genes, gene_list=all_genes)
+    alr_genes = list(alr.columns)
+
+    assert (genes_to_keep == alr_genes)
+
+
+def test_alr_functions_dirimpute(expression_data):
+    """Test the TPM -> ALR  transform for some expression data.
+    Directly impute in the alr calculation."""
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+
+    all_genes = list(expression_data.tpm.columns)
+    reference_genes = all_genes[:1]
+    genes_to_keep = all_genes[1:]
+    alr = norm.alr_from_tpm(expression_data.tpm, reference_genes,
+                            gene_list=all_genes, imputer=normalize.impute)
     alr_genes = list(alr.columns)
 
     assert (genes_to_keep == alr_genes)
