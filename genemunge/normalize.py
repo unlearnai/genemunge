@@ -131,13 +131,15 @@ class Normalizer(object):
     def tpm_from_rpkm(self, data, gene_list=None, imputer=do_nothing):
         """
         Transform data from RPKM to TPM.
-        Genes are reindex to GTEx.
-        Any genes from GTEx that are not in data.columns are set to zero.
-        Any genes not present in GTEx are dropped.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
+        Takes an optional imputation method applied after reindexing.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
             gene_list (optional; List[str]): a list of gene ids
+            imputer (optional; callable)
 
         Returns:
             pandas.DataFrame
@@ -149,9 +151,10 @@ class Normalizer(object):
     def tpm_from_counts(self, data, gene_list=None, imputer=do_nothing):
         """
         Transform data from counts to TPM.
-        Genes are reindex to GTEx.
-        Any genes from GTEx that are not in data.columns are set to zero.
-        Any genes not present in GTEx are dropped.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
+        Takes an optional imputation method applied after reindexing.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
@@ -169,6 +172,10 @@ class Normalizer(object):
     def tpm_from_subset(self, data, gene_list=None, imputer=do_nothing):
         """
         Renormalize a subset of genes already in TPM.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
+        Takes an optional imputation method applied after reindexing.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
@@ -184,6 +191,10 @@ class Normalizer(object):
     def clr_from_tpm(self, data, gene_list=None, imputer=do_nothing):
         """
         Compute the centered log ratio transform of data in TPM format.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
+        Takes an optional imputation method applied after reindexing.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
@@ -201,6 +212,9 @@ class Normalizer(object):
     def tpm_from_clr(self, data, gene_list=None):
         """
         Compute data in TPM format from centered log ratio transformed data.
+        Unless a gene list is specified, genes are reindex to GTEx:
+            - Any genes from GTEx that are not in data.columns are set to zero.
+            - Any genes not present in GTEx are dropped.
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
@@ -233,7 +247,7 @@ class Normalizer(object):
         common_genes = self._get_common_genes(gene_list)
         common_references = [gene for gene in reference_genes if gene in common_genes]
         genes_to_keep = [gene for gene in common_genes if gene not in common_references]
-        imputed = self.tpm_from_subset(data, genes_to_keep + common_references)
+        imputed = self.tpm_from_subset(data, genes_to_keep + common_references, imputer)
         log_transformed = numpy.log(imputed)
         refs = log_transformed[common_references].mean(axis=1)
         return log_transformed[genes_to_keep].subtract(refs, axis=0)
