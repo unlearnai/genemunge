@@ -92,7 +92,7 @@ class Describer(object):
         gene_id = self.get_ensembl(identifier)
         if gene_id != gene_id:
             raise KeyError("Unknown identifier {}".format(identifier))
-        stats = [s for s in self.__stats__ if s != 'hellinger' and s != 'hellinger_clr']
+        stats = [s for s in self.__stats__ if s not in ['hellinger', 'hellinger_clr']]
         return pandas.concat({k: self.tissue_stats[k].loc[gene_id] for k in stats},
                               axis=1)
 
