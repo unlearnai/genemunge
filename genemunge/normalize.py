@@ -263,7 +263,7 @@ class Normalizer(object):
         data_subset = self.reindex(data, gene_list)
         return (data_subset - mean_expression)/std_expression
 
-    def ternarize_from_clr(self, data, tissues, cutoff_width=2.0, gene_list=None):
+    def ternary_from_clr(self, data, tissues, cutoff=2.0, gene_list=None):
         """
         Ternarize the z-scores of the clr'd tpm data relative to healthy tissue
         in GTEx.  -1 if z-score < -cutoff_width, and 1 if > cutoff_width, 0 else.
@@ -271,7 +271,7 @@ class Normalizer(object):
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
             tissues (pandas.Series) ~ (num_samples)): tissues of data samples
-            cutoff_width (float): binarization cutoff +- cutoff_width
+            cutoff (float): ternarization cutoff = +/- cutoff
             gene_list (optional; List[str]): a list of gene ids
 
         Returns:
@@ -281,8 +281,8 @@ class Normalizer(object):
         # compute z-scores
         z_scores = self.z_score_from_clr(data, tissues, gene_list)
         def ternarize(z):
-            if z < cutoff_width:
-                if z > -cutoff_width:
+            if z < cutoff:
+                if z > -cutoff:
                     return 0
                 else:
                     return -1
