@@ -294,14 +294,8 @@ class Normalizer(object):
         """
         # compute z-scores
         z_scores = self.z_score_from_clr(data, tissues, gene_list)
-        def ternarize(z):
-            if z < cutoff:
-                if z > -cutoff:
-                    return 0
-                else:
-                    return -1
-            else:
-                return 1
+        def ternarize(z, cutoff=cutoff):
+            return (z > cutoff) - (z < -cutoff)
         # apply ternarization
         return z_scores.applymap(ternarize)
 
