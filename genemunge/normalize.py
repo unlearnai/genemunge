@@ -6,6 +6,7 @@ import warnings
 from pathlib import Path
 
 from . import convert
+from . import describe
 
 def do_nothing(data):
     """
@@ -84,6 +85,7 @@ class Normalizer(object):
         if identifier is not 'ensembl_gene_id':
             c = convert.IDConverter('ensembl_gene_id', identifier)
             self.gene_lengths.index = c.convert_list(list(self.gene_lengths.index))
+        self.describer = describe.Describer(identifier)
         # drop any NaN and duplicate ids
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.isnull()]
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
@@ -118,6 +120,7 @@ class Normalizer(object):
 
         Args:
             data (pandas.DataFrame ~ (num_samples, num_genes))
+            gene_list (List[str]): a list of gene ids
 
         Returns:
             pandas.DataFrame ~ (num_samples, num_common_genes)
@@ -251,6 +254,50 @@ class Normalizer(object):
         log_transformed = numpy.log(imputed)
         refs = log_transformed[common_references].mean(axis=1)
         return log_transformed[genes_to_keep].subtract(refs, axis=0)
+
+    def z_score_from_clr(self, data, tissues, gene_list=None):
+        """
+        Compute the z-score of the clr'd tpm data relative to healthy tissue
+        in GTEx.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+            tissues (pandas.Series) ~ (num_samples)): tissues of data samples
+            gene_list (optional; List[str]): a list of gene ids
+
+        Returns:
+            pandas.DataFrame ~ (num_samples, num_genes - num_reference_genes)
+
+        """
+        # set up an object to describe genes
+        mean_clr = self.describer.tissue_stats['mean_clr'].reindex(gene_list)
+        std_clr = self.describer.tissue_stats['std_clr'].reindex(gene_list)
+        mean_expression = mean_clr[tissues].transpose().set_index(tissues.index)
+        std_expression = std_clr[tissues].transpose().set_index(tissues.index)
+        data_subset = self.reindex(data, gene_list)
+        return (data_subset - mean_expression)/std_expression
+
+    def ternary_from_clr(self, data, tissues, cutoff=2.0, gene_list=None):
+        """
+        Ternarize the z-scores of the clr'd tpm data relative to healthy tissue
+        in GTEx.  -1 if z-score < -cutoff_width, and 1 if > cutoff_width, 0 else.
+
+        Args:
+            data (pandas.DataFrame ~ (num_samples, num_genes))
+            tissues (pandas.Series) ~ (num_samples)): tissues of data samples
+            cutoff (float): ternarization cutoff = +/- cutoff
+            gene_list (optional; List[str]): a list of gene ids
+
+        Returns:
+            pandas.DataFrame ~ (num_samples, num_genes - num_reference_genes)
+
+        """
+        # compute z-scores
+        z_scores = self.z_score_from_clr(data, tissues, gene_list)
+        def ternarize(z, cutoff=cutoff):
+            return (z > cutoff) - (z < -cutoff)
+        # apply ternarization
+        return z_scores.applymap(ternarize)
 
 
 class RemoveUnwantedVariation(object):
