@@ -297,7 +297,7 @@ class Normalizer(object):
         def ternarize(z, cutoff=cutoff):
             return (z > cutoff) - (z < -cutoff)
         # apply ternarization
-        return z_scores.applymap(ternarize)
+        return z_scores.applymap(ternarize).astype(numpy.int32)
 
 
 class RemoveUnwantedVariation(object):
