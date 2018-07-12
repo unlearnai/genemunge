@@ -203,8 +203,11 @@ def test_ordinalize(expression_data):
     tpm = normalize.impute(expression_data.tpm)
     clr = norm.clr_from_tpm(tpm, gene_list=tpm.columns)
 
-    cutoffs = [0]
-    ords = norm.ordinalize(clr, cutoffs)
+    cutoffs = [0.37]
+    min_value = 5
+    ords = norm.ordinalize(clr, cutoffs, min_value=min_value)
+    assert ((clr <= cutoffs[0]) == (ords == min_value)).all().all()
+    assert ((clr > cutoffs[0]) == (ords == 1+min_value)).all().all()
 
 
 def test_remove_unwanted_variation_noX():
