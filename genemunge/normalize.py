@@ -270,9 +270,18 @@ class Normalizer(object):
             pandas.DataFrame ~ (num_samples, num_genes - num_reference_genes)
 
         """
-        # set up an object to describe genes
-        mean_clr = self.describer.tissue_stats['mean_clr'].reindex(gene_list)
-        std_clr = self.describer.tissue_stats['std_clr'].reindex(gene_list)
+        # get the clr tissue stats from GTEx
+        mean_clr = pandas.DataFrame(index=gene_list,
+                        columns=self.describer.tissue_stats['mean_clr'].columns)
+        std_clr = pandas.DataFrame(index=gene_list,
+                        columns=self.describer.tissue_stats['std_clr'].columns)
+        if gene_list is None:
+            gene_list = data.columns
+        for gene in gene_list:
+            gene_tissue_expr = self.describer.get_tissue_expression(gene)
+            mean_clr.loc[gene] = gene_tissue_expr['mean_clr']
+            std_clr.loc[gene] = gene_tissue_expr['std_clr']
+
         mean_expression = mean_clr[tissues].transpose().set_index(tissues.index)
         std_expression = std_clr[tissues].transpose().set_index(tissues.index)
         data_subset = self.reindex(data, gene_list)
