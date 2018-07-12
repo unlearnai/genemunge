@@ -77,32 +77,33 @@ class Describer(object):
         except AttributeError:
             pass
 
-    def get_tissue_expression(self, identifier):
+    def get_tissue_expression(self, gene_identifier):
         """
         Get statistics describing the expression of a gene across tissues
         in healthy people (from GTEx).
 
         Args:
-            identifier (str)
+            gene_identifier (str): the identifier for the gene.
 
         Returns:
             pandas.DataFrame
 
         """
-        gene_id = self.get_ensembl(identifier)
+        gene_id = self.get_ensembl(gene_identifier)
         if gene_id != gene_id:
-            raise KeyError("Unknown identifier {}".format(identifier))
+            raise KeyError("Unknown gene identifier {}".format(gene_identifier))
         stats = [s for s in self.__stats__ if s not in ['hellinger', 'hellinger_clr']]
         return pandas.concat({k: self.tissue_stats[k].loc[gene_id] for k in stats},
                               axis=1)
 
-    def plot_tissue_expression(self, identifier, sortby=None, show=True, filename=None):
+    def plot_tissue_expression(self, gene_identifier, sortby=None, show=True,
+                               filename=None):
         """
         Plot the expression of a gene across tissues in health people
         (from GTEx).
 
         Args:
-            identifier (str)
+            gene_identifier (str): the identifier for the gene.
             sortby (optional; str): 'median', 'mean', 'std', 'lower_quartile'
                 or 'upper_quartile'. if None, then tissues are alphabetical
             filename (optional; str)
@@ -111,7 +112,7 @@ class Describer(object):
             None
 
         """
-        tissue_stats = self.get_tissue_expression(identifier)
+        tissue_stats = self.get_tissue_expression(gene_identifier)
 
         if sortby is not None:
             stats = tissue_stats.sort_values(sortby)
@@ -148,7 +149,7 @@ class Describer(object):
 
         ax.set_ylim([min_y - 0.1 * min_y, max_y + 0.1 * max_y])
         plt.xticks(numpy.arange(len(tissues)) + 1, tissues, rotation='vertical')
-        ax.set_title(identifier)
+        ax.set_title(gene_identifier)
         ax.set_ylabel('TPM')
 
         if show:
@@ -176,7 +177,7 @@ class Describer(object):
                 terms += [term]
         return list(set(terms))
 
-    def get_gene_info(self, identifier):
+    def get_gene_info(self, gene_identifier):
         """
         Get some information about a gene such as:
             ensemble_gene_id
@@ -185,14 +186,14 @@ class Describer(object):
             associated categories in the Gene Ontology
 
         Args:
-            identifier (str)
+            gene_identifier (str): the identifier for the gene.
 
         Returns:
             None
 
         """
         gene_info = {}
-        gene_info['ensembl'] = self.get_ensembl(identifier)
+        gene_info['ensembl'] = self.get_ensembl(gene_identifier)
         gene_info['symbol'] = self.get_symbol(gene_info['ensembl'])
         gene_info['name'] = self.get_name(gene_info['ensembl'])
         gene_info['ontology'] = {i: self.searcher.go[i]['name']
