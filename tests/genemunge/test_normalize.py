@@ -193,6 +193,7 @@ def test_zscore_from_clr(expression_data):
 
     tissues = pd.Series('Liver', index=clr.index)
     zscore = norm.z_score_from_clr(clr, tissues)
+    assert zscore.shape == clr.shape
 
 
 def test_ordinalize(expression_data):

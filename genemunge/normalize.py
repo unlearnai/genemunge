@@ -83,9 +83,10 @@ class Normalizer(object):
         self.gene_lengths.index = convert.clean_ensembl_ids(self.gene_lengths.index)
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
         # convert the gene ids
+        self.converter = None
         if identifier is not 'ensembl_gene_id':
-            c = convert.IDConverter('ensembl_gene_id', identifier)
-            self.gene_lengths.index = c.convert_list(list(self.gene_lengths.index))
+            self.converter = convert.IDConverter('ensembl_gene_id', identifier)
+            self.gene_lengths.index = self.converter.convert_list(list(self.gene_lengths.index))
         self.describer = describe.Describer(identifier)
         # drop any NaN and duplicate ids
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.isnull()]
@@ -271,16 +272,24 @@ class Normalizer(object):
 
         """
         # get the clr tissue stats from GTEx
-        mean_clr = pandas.DataFrame(index=gene_list,
-                        columns=self.describer.tissue_stats['mean_clr'].columns)
-        std_clr = pandas.DataFrame(index=gene_list,
-                        columns=self.describer.tissue_stats['std_clr'].columns)
+        mean_clr = self.describer.tissue_stats['mean_clr']
+        std_clr = self.describer.tissue_stats['std_clr']
+
+        # convert gene IDs from Ensembl to the identifier, if needed
+        # duplicates are dropped!
+        if self.converter is not None:
+            mean_clr.index = self.converter.convert_list(mean_clr.index)
+            mean_clr = mean_clr[mean_clr.index.notnull()]
+            mean_clr = mean_clr[~mean_clr.index.duplicated(keep='first')]
+            std_clr.index = self.converter.convert_list(std_clr.index)
+            std_clr = std_clr[std_clr.index.notnull()]
+            std_clr = std_clr[~std_clr.index.duplicated(keep='first')]
+
         if gene_list is None:
             gene_list = data.columns
-        for gene in gene_list:
-            gene_tissue_expr = self.describer.get_tissue_expression(gene)
-            mean_clr.loc[gene] = gene_tissue_expr['mean_clr']
-            std_clr.loc[gene] = gene_tissue_expr['std_clr']
+
+        mean_clr = mean_clr.reindex(gene_list)
+        std_clr = std_clr.reindex(gene_list)
 
         mean_expression = mean_clr[tissues].transpose().set_index(tissues.index)
         std_expression = std_clr[tissues].transpose().set_index(tissues.index)
