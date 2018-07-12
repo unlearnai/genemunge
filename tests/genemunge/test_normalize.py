@@ -183,6 +183,30 @@ def test_gtex_reindex(expression_data):
     assert (tpm.columns == norm.gene_lengths.index).all()
 
 
+def test_zscore_from_clr(expression_data):
+    """Test the z-score transformation on CLR data."""
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+
+    tpm = normalize.impute(expression_data.tpm)
+    clr = norm.clr_from_tpm(tpm, gene_list=tpm.columns)
+
+    tissues = pd.Series('Liver', index=clr.index)
+    zscore = norm.z_score_from_clr(clr, tissues)
+
+
+def test_ordinalize(expression_data):
+    """Test the ordinalize transformation on CLR data."""
+    identifier = 'symbol'
+    norm = normalize.Normalizer(identifier=identifier)
+
+    tpm = normalize.impute(expression_data.tpm)
+    clr = norm.clr_from_tpm(tpm, gene_list=tpm.columns)
+
+    cutoffs = [0]
+    ords = norm.ordinalize(clr, cutoffs)
+
+
 def test_remove_unwanted_variation_noX():
     """Test the RUV2 implementation for data with no X."""
     num_samples = 100
