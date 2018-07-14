@@ -108,7 +108,7 @@ def create_tissue_stats():
                 fraction_zero, pandas.DataFrame(
                         (tpm == 0).mean().astype(float), columns=[t])], axis=1)
         # Convert tpms to clr with 0.5*min imputation
-        clr = norm.clr_from_tpm(tissue_expression, imputer=normalize.impute)
+        clr = norm.clr_from_tpm(tpm, imputer=normalize.impute)
         mean_clr = pandas.concat(
                 [mean_clr, pandas.DataFrame(clr.mean(), columns=[t])], axis=1)
         median_clr = pandas.concat(
