@@ -4,6 +4,7 @@ import numpy
 import pickle
 import warnings
 from pathlib import Path
+from cytoolz import partial
 
 from . import convert
 from . import describe
@@ -82,9 +83,10 @@ class Normalizer(object):
         self.gene_lengths.index = convert.clean_ensembl_ids(self.gene_lengths.index)
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.duplicated(keep='first')]
         # convert the gene ids
+        self.converter = None
         if identifier is not 'ensembl_gene_id':
-            c = convert.IDConverter('ensembl_gene_id', identifier)
-            self.gene_lengths.index = c.convert_list(list(self.gene_lengths.index))
+            self.converter = convert.IDConverter('ensembl_gene_id', identifier)
+            self.gene_lengths.index = self.converter.convert_list(list(self.gene_lengths.index))
         self.describer = describe.Describer(identifier)
         # drop any NaN and duplicate ids
         self.gene_lengths = self.gene_lengths[~self.gene_lengths.index.isnull()]
@@ -119,7 +121,7 @@ class Normalizer(object):
         dataset from recount.
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
+            data (pandas.DataFrame ~ (num_samples, num_genes)): any expression data
             gene_list (List[str]): a list of gene ids
 
         Returns:
@@ -140,7 +142,7 @@ class Normalizer(object):
         Takes an optional imputation method applied after reindexing.
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
+            data (pandas.DataFrame ~ (num_samples, num_genes)): RPKM data
             gene_list (optional; List[str]): a list of gene ids
             imputer (optional; callable)
 
@@ -160,7 +162,7 @@ class Normalizer(object):
         Takes an optional imputation method applied after reindexing.
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
+            data (pandas.DataFrame ~ (num_samples, num_genes)): count data
             gene_list (optional; List[str]): a list of gene ids
             imputer (optional; callable)
 
@@ -181,7 +183,7 @@ class Normalizer(object):
         Takes an optional imputation method applied after reindexing.
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
+            data (pandas.DataFrame ~ (num_samples, num_genes)): TPM data
             gene_list (optional; List[str]): a list of gene ids
             imputer (optional; callable)
 
@@ -200,7 +202,7 @@ class Normalizer(object):
         Takes an optional imputation method applied after reindexing.
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
+            data (pandas.DataFrame ~ (num_samples, num_genes)): TPM data
             gene_list (optional; List[str]): a list of gene ids
             imputer (optional; callable)
 
@@ -220,7 +222,7 @@ class Normalizer(object):
             - Any genes not present in GTEx are dropped.
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
+            data (pandas.DataFrame ~ (num_samples, num_genes)): CLR data
             gene_list (optional; List[str]): a list of gene ids
 
         Returns:
@@ -237,7 +239,7 @@ class Normalizer(object):
         and drops the reference genes from the data set.
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
+            data (pandas.DataFrame ~ (num_samples, num_genes)): TPM data
             reference_genes (List[str]): a list of gene ids to use as the
                 references in the ALR transform
             gene_list (optional; List[str]): a list of gene ids
@@ -261,7 +263,7 @@ class Normalizer(object):
         in GTEx.
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
+            data (pandas.DataFrame ~ (num_samples, num_genes)): CLR data
             tissues (pandas.Series) ~ (num_samples)): tissues of data samples
             gene_list (optional; List[str]): a list of gene ids
 
@@ -269,35 +271,55 @@ class Normalizer(object):
             pandas.DataFrame ~ (num_samples, num_genes - num_reference_genes)
 
         """
-        # set up an object to describe genes
-        mean_clr = self.describer.tissue_stats['mean_clr'].reindex(gene_list)
-        std_clr = self.describer.tissue_stats['std_clr'].reindex(gene_list)
+        # get the clr tissue stats from GTEx
+        mean_clr = self.describer.tissue_stats['mean_clr']
+        std_clr = self.describer.tissue_stats['std_clr']
+
+        # convert gene IDs from Ensembl to the identifier, if needed
+        # duplicates are dropped!
+        if self.converter is not None:
+            mean_clr.index = self.converter.convert_list(mean_clr.index)
+            mean_clr = mean_clr[mean_clr.index.notnull()]
+            mean_clr = mean_clr[~mean_clr.index.duplicated(keep='first')]
+            std_clr.index = self.converter.convert_list(std_clr.index)
+            std_clr = std_clr[std_clr.index.notnull()]
+            std_clr = std_clr[~std_clr.index.duplicated(keep='first')]
+
+        if gene_list is None:
+            gene_list = data.columns
+
+        mean_clr = mean_clr.reindex(gene_list)
+        std_clr = std_clr.reindex(gene_list)
+
         mean_expression = mean_clr[tissues].transpose().set_index(tissues.index)
         std_expression = std_clr[tissues].transpose().set_index(tissues.index)
         data_subset = self.reindex(data, gene_list)
         return (data_subset - mean_expression)/std_expression
 
-    def ternary_from_clr(self, data, tissues, cutoff=2.0, gene_list=None):
+    def ordinalize(self, data, cutoffs, min_value=0):
         """
-        Ternarize the z-scores of the clr'd tpm data relative to healthy tissue
-        in GTEx.  -1 if z-score < -cutoff_width, and 1 if > cutoff_width, 0 else.
+        Convert data into ordinal values given cutoffs between ordinal boundaries.
+        Returns the same type as the input data.
+
+        Example:
+            If cutoffs = [-2, 2] and min_value = -1, then
+            [[-3.2,  1.4, -0.7]        [[-1,  0,  0]
+             [ 2.5, -0.8,  6.1]   ->    [ 1,  0,  1]
+             [-1.9, -4.5,  3.7]]        [ 0, -1,  1]]
 
         Args:
-            data (pandas.DataFrame ~ (num_samples, num_genes))
-            tissues (pandas.Series) ~ (num_samples)): tissues of data samples
-            cutoff (float): ternarization cutoff = +/- cutoff
-            gene_list (optional; List[str]): a list of gene ids
+            data (pandas.DataFrame ~ (num_samples, num_genes)): any expression data
+            cutoffs (List[float]): cutoffs between ordinal boundaries.
+                No lower or upper bounds should be given, e.g. to binarize this
+                argument should be a list with 1 value.
 
         Returns:
-            pandas.DataFrame ~ (num_samples, num_genes - num_reference_genes)
+            pandas.DataFrame ~ (num_samples, num_genes): ordinal values,
+                typed as the input data.
 
         """
-        # compute z-scores
-        z_scores = self.z_score_from_clr(data, tissues, gene_list)
-        def ternarize(z, cutoff=cutoff):
-            return (z > cutoff) - (z < -cutoff)
-        # apply ternarization
-        return z_scores.applymap(ternarize).astype(numpy.int32)
+        ordinalizer = partial(numpy.searchsorted, cutoffs)
+        return data.apply(ordinalizer).astype(data.dtypes) + min_value
 
 
 class RemoveUnwantedVariation(object):
