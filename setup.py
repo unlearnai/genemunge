@@ -75,6 +75,7 @@ setup(name='genemunge',
           'numpy',
           'pandas',
           'pytest',
+          'tables',
           'cytoolz'
           ],
       tests_require=[
