@@ -71,12 +71,10 @@ setup(name='genemunge',
                                   'data/gtex/gene_info.csv',
                                   'data/gtex/tissue_stats.h5']},
       install_requires=[
-          'h5py',
           'matplotlib',
           'numpy',
           'pandas',
           'pytest',
-          'seaborn',
           'tables',
           'cytoolz'
           ],
